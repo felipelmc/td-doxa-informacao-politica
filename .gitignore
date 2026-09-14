@@ -1,0 +1,23 @@
+# R
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+Rplots.pdf
+
+# renv (a biblioteca é recriada com renv::restore())
+renv/library/
+renv/local/
+renv/staging/
+
+# Quarto e knitr
+.quarto/
+*_cache/
+**/*_files/
+reports/*.log
+reports/*.tex
+
+# sistema
+.DS_Store
+Rplots*.pdf
+

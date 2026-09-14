@@ -1,0 +1,230 @@
+variavel,ordem,categoria,rotulo_publicacao,n,pct_ponderado
+mun,1,ARARUAMA,ARARUAMA,24,2.1
+mun,2,BARRA DO PIRAÍ,BARRA DO PIRAÍ,22,1.61
+mun,3,BARRA MANSA,BARRA MANSA,21,1.65
+mun,4,BELFORD ROXO,BELFORD ROXO,29,2.39
+mun,5,BOM JARDIM,BOM JARDIM,12,1.08
+mun,6,CABO FRIO,CABO FRIO,12,1.01
+mun,7,CACHOEIRAS DE MACACU,CACHOEIRAS DE MACACU,12,0.88
+mun,8,CAMBUCI,CAMBUCI,6,0.54
+mun,9,CAMPOS DOS GOYTACAZES,CAMPOS DOS GOYTACAZES,23,1.85
+mun,10,CASIMIRO DE ABREU,CASIMIRO DE ABREU,11,1.01
+mun,11,CONCEIÇÃO DE MACABU,CONCEIÇÃO DE MACABU,12,0.95
+mun,12,DUQUE DE CAXIAS,DUQUE DE CAXIAS,63,5.17
+mun,13,ENGENHEIRO PAULO DE FRONTIN,ENGENHEIRO PAULO DE FRONTIN,12,0.89
+mun,14,GUAPIMIRIM,GUAPIMIRIM,10,0.79
+mun,15,ITABORAÍ,ITABORAÍ,23,1.72
+mun,16,ITAPERUNA,ITAPERUNA,12,0.96
+mun,17,JAPERI,JAPERI,13,1
+mun,18,MACAÉ,MACAÉ,24,1.5
+mun,19,MAGÉ,MAGÉ,17,1.35
+mun,20,MESQUITA,MESQUITA,25,2.14
+mun,21,NILÓPOLIS,NILÓPOLIS,24,2.23
+mun,22,NITERÓI,NITERÓI,35,3.06
+mun,23,NOVA IGUAÇU,NOVA IGUAÇU,47,4.09
+mun,24,PARAÍBA DO SUL,PARAÍBA DO SUL,12,0.92
+mun,25,PETRÓPOLIS,PETRÓPOLIS,36,4.14
+mun,26,RIO CLARO,RIO CLARO,12,0.84
+mun,27,RIO DE JANEIRO,RIO DE JANEIRO,499,39.37
+mun,28,SANTO ANTÔNIO DE PÁDUA,SANTO ANTÔNIO DE PÁDUA,6,0.28
+mun,29,SÃO FRANCISCO DE ITABAPOANA,SÃO FRANCISCO DE ITABAPOANA,12,1.15
+mun,30,SÃO GONÇALO,SÃO GONÇALO,57,5.13
+mun,31,SÃO JOÃO DE MERITI,SÃO JOÃO DE MERITI,24,1.69
+mun,32,SILVA JARDIM,SILVA JARDIM,12,1.12
+mun,33,TERESÓPOLIS,TERESÓPOLIS,34,2.61
+mun,34,TRÊS RIOS,TRÊS RIOS,12,0.88
+mun,35,VOLTA REDONDA,VOLTA REDONDA,24,1.89
+zona,1,URBANO,URBANO,1131,92.33
+zona,2,RURAL,RURAL,98,7.67
+sexo,1,FEMININO,Mulheres,666,53.83
+sexo,2,MASCULINO,Homens,563,46.17
+idadef,1,18 - 24 ANOS,18 a 24 anos,144,12.37
+idadef,2,25 - 34 ANOS,25 a 34 anos,236,18.43
+idadef,3,35 - 44 ANOS,35 a 44 anos,250,19.83
+idadef,4,45 - 59 ANOS,45 a 59 anos,305,25.2
+idadef,5,60 ANOS OU MAIS,60 anos ou mais,294,24.18
+cor,1,BRANCA,Branca,340,42.51
+cor,2,PRETA,Preta,323,16.94
+cor,3,PARDA,Parda,528,40.3
+cor,4,OUTRA,Amarela ou indígena,38,0.25
+esc_faixa,1,Sem instrução e fundamental incompleto,Sem instrução ou fundamental incompleto,269,25.61
+esc_faixa,2,Fundamental completo e médio incompleto,Fundamental completo ou médio incompleto,201,16.56
+esc_faixa,3,Médio completo e superior incompleto,Médio completo ou superior incompleto,541,40
+esc_faixa,4,Superior completo,Superior completo,218,17.83
+esc2,1,Até médio incompleto,Até médio incompleto,470,42.17
+esc2,2,Médio completo ou mais,Médio completo ou mais,759,57.83
+area3,1,RIO CAPITAL,Capital,499,39.37
+area3,2,RM (EXCETO CAPITAL),Região Metropolitana (exceto capital),415,35.79
+area3,3,DEMAIS MUNICÍPIOS,Demais municípios,315,24.84
+rendaf,1,"ATÉ R$ 1.320,00 (ATÉ 1 SALÁRIO MÍNIMO)","ATÉ R$ 1.320,00 (ATÉ 1 SALÁRIO MÍNIMO)",281,23.99
+rendaf,2,"DE R$ 1.320,01 A R$ 2.640,00 (+ DE 1 ATÉ 2 SM)","DE R$ 1.320,01 A R$ 2.640,00 (+ DE 1 ATÉ 2 SM)",216,17.74
+rendaf,3,"DE R$ 2.640,01 A R$ 3.960,00 (+ DE 2 ATÉ 3 SM)","DE R$ 2.640,01 A R$ 3.960,00 (+ DE 2 ATÉ 3 SM)",228,18.39
+rendaf,4,"DE R$ 3.960,01 A R$ 6.600,00 (+ DE 3 ATÉ 5 SM)","DE R$ 3.960,01 A R$ 6.600,00 (+ DE 3 ATÉ 5 SM)",196,14.8
+rendaf,5,"DE R$ 6.600,01 A R$ 13.200,00 (+ DE 5 ATÉ 10 SM)","DE R$ 6.600,01 A R$ 13.200,00 (+ DE 5 ATÉ 10 SM)",252,20.39
+rendaf,6,"DE R$ 13.200,01 A R$ 19.800,00 (+ DE 10 ATÉ 15 SM)","DE R$ 13.200,01 A R$ 19.800,00 (+ DE 10 ATÉ 15 SM)",46,3.82
+rendaf,7,"DE R$ 19.800,01 A R$ 26.400,00 (+ DE 15 ATÉ 20 SM)","DE R$ 19.800,01 A R$ 26.400,00 (+ DE 15 ATÉ 20 SM)",8,0.62
+rendaf,8,"MAIS DE R$ 26.400,00 (+ DE 20 SM)","MAIS DE R$ 26.400,00 (+ DE 20 SM)",2,0.25
+renda_grp,1,Até 2 salários mínimos,Até 2 salários mínimos,497,41.73
+renda_grp,2,Mais de 2 a 5 salários mínimos,Mais de 2 a 5 salários mínimos,424,33.19
+renda_grp,3,Mais de 5 salários mínimos,Mais de 5 salários mínimos,308,25.08
+freq_inf_pol,1,TODOS OS DIAS,Todos os dias,250,20.53
+freq_inf_pol,2,ALGUMAS VEZES POR SEMANA,Algumas vezes por semana,159,12.04
+freq_inf_pol,3,UMA VEZ POR SEMANA,Uma vez por semana,73,6.08
+freq_inf_pol,4,ALGUMAS VEZES POR MÊS,Algumas vezes por mês,79,6.36
+freq_inf_pol,5,RARAMENTE,Raramente,338,27.37
+freq_inf_pol,6,NUNCA,Nunca,320,26.8
+freq_inf_pol,7,NÃO SABE RESPONDER (NÃO LER),Não sabe,10,0.81
+freq4,1,Todo dia,Todo dia,250,20.7
+freq4,2,Toda semana,Toda semana,232,18.27
+freq4,3,Mensal ou raramente,Mensal ou raramente,417,34.01
+freq4,4,Nunca,Nunca,320,27.02
+inf1,1,NOTICIÁRIO DA TV,Noticiário da TV,472,39.41
+inf1,2,JORNAIS IMPRESSOS E REVISTAS,Jornais impressos e revistas,30,2.33
+inf1,3,RÁDIO,Rádio,30,2.75
+inf1,4,"SITES, BLOGS E PORTAIS DE NOTÍCIAS","Sites, blogs e portais de notícias",97,8.16
+inf1,5,"REDES SOCIAIS COMO FACEBOOK, INSTAGRAM OU TWITTER","Redes sociais (Facebook, Instagram ou Twitter)",251,19.67
+inf1,6,WHATSAPP OU TELEGRAM,WhatsApp ou Telegram,38,2.98
+inf1,7,"CONVERSAS COM AMIGOS, FAMILIARES",Conversas com amigos e familiares,86,7.2
+inf1,8,CONVERSAS COM COLEGAS DE TRABALHOS,Conversas com colegas de trabalho,36,2.85
+inf1,9,BUSCA NO GOOGLE,Busca no Google,43,2.77
+inf1,10,NENHUM DESTES,Nenhum destes,89,7.44
+inf1,11,NÃO ME INFORMO SOBRE POLÍTICA (NÃO LER),Não me informo sobre política,52,4.14
+inf1,12,NÃO SABE RESPONDER (NÃO LER),Não sabe,5,0.3
+fonte4,1,TV,TV,472,39.41
+fonte4,2,Internet,Internet,429,33.58
+fonte4,3,Outras fontes,Outras fontes,182,15.12
+fonte4,4,Não se informa,Não se informa,146,11.89
+fonte5,1,TV,TV,472,39.41
+fonte5,2,Redes sociais e mensageiros,Redes sociais e mensageiros,289,22.65
+fonte5,3,"Sites, portais e busca","Sites, portais e busca",140,10.93
+fonte5,4,Outras fontes,Outras fontes,182,15.12
+fonte5,5,Não se informa,Não se informa,146,11.89
+redes_pol,1,FACEBOOK,FACEBOOK,253,20.15
+redes_pol,2,TWITTER,TWITTER,83,6.31
+redes_pol,3,YOUTUBE,YOUTUBE,116,9.53
+redes_pol,4,WHATSAPP,WHATSAPP,132,10.88
+redes_pol,5,INSTAGRAM,INSTAGRAM,186,14.75
+redes_pol,6,TIKTOK,TIKTOK,33,2.69
+redes_pol,7,NÃO USO REDES SOCIAIS (NÃO LER),NÃO USO REDES SOCIAIS (NÃO LER),316,26.52
+redes_pol,8,OUTRA. QUAL? ABERTA,OUTRA. QUAL? ABERTA,65,5.32
+redes_pol,9,NÃO SABE RESPONDER (NÃO LER),NÃO SABE RESPONDER (NÃO LER),38,3.12
+redes_pol,10,NÃO QUIS RESPONDER (NÃO LER),NÃO QUIS RESPONDER (NÃO LER),7,0.74
+redes_rec,1,Não usa redes sociais,Não usa redes sociais,346,28.94
+redes_rec,2,Facebook,Facebook,253,20.15
+redes_rec,3,Instagram,Instagram,186,14.75
+redes_rec,4,WhatsApp ou Telegram,WhatsApp ou Telegram,136,11.16
+redes_rec,5,YouTube,YouTube,116,9.53
+redes_rec,6,Twitter (X),Twitter (X),83,6.31
+redes_rec,7,TikTok ou Kwai,TikTok ou Kwai,36,3
+redes_rec,8,Outra rede,Outra rede,1,0.1
+redes_rec,9,"Não é rede social (Google, sites ou TV)","Não é rede social (Google, sites ou TV)",27,2.2
+redes_rec,10,Não sabe ou não respondeu,Não sabe ou não respondeu,45,3.86
+redes_grp,1,Não usa redes sociais,Não usa redes sociais,346,28.94
+redes_grp,2,Facebook,Facebook,253,20.15
+redes_grp,3,Instagram,Instagram,186,14.75
+redes_grp,4,WhatsApp ou Telegram,WhatsApp ou Telegram,136,11.16
+redes_grp,5,YouTube,YouTube,116,9.53
+redes_grp,6,Twitter (X),Twitter (X),83,6.31
+redes_grp,7,Outras respostas,Outras respostas,109,9.16
+crivo_votou_1t,1,SIM,SIM,1013,82.42
+crivo_votou_1t,2,NÃO,NÃO,213,17.31
+crivo_votou_1t,3,NÃO SABE RESPONDER (NÃO LER),NÃO SABE RESPONDER (NÃO LER),3,0.26
+cen2_votou_1t,1,CIRO GOMES,CIRO GOMES,22,2.23
+cen2_votou_1t,2,FELIPE D’AVILA,FELIPE D’AVILA,2,0.22
+cen2_votou_1t,3,JAIR BOLSONARO,JAIR BOLSONARO,401,40.64
+cen2_votou_1t,4,LÉO PÉRICLES,LÉO PÉRICLES,1,0.11
+cen2_votou_1t,5,LULA,LULA,449,43.43
+cen2_votou_1t,6,PADRE KELMON,PADRE KELMON,1,0.07
+cen2_votou_1t,7,SIMONE TEBET,SIMONE TEBET,37,3.7
+cen2_votou_1t,8,SORAYA THRONICKE,SORAYA THRONICKE,4,0.44
+cen2_votou_1t,9,VOTOU BRANCO/NULO,VOTOU BRANCO/NULO,68,6.49
+cen2_votou_1t,10,NÃO QUIS RESPONDER (NÃO LER),NÃO QUIS RESPONDER (NÃO LER),28,2.65
+cen_t2,1,JAIR BOLSONARO,JAIR BOLSONARO,399,33.75
+cen_t2,2,LULA,LULA,530,41.95
+cen_t2,3,BRANCO/NULO,BRANCO/NULO,92,7.66
+cen_t2,4,NÃO FOI VOTAR,NÃO FOI VOTAR,182,14.67
+cen_t2,5,NÃO SABE/NÃO LEMBRA (NÃO LER),NÃO SABE/NÃO LEMBRA (NÃO LER),13,1.07
+cen_t2,6,NÃO QUIS RESPONDER (NÃO LER),NÃO QUIS RESPONDER (NÃO LER),13,0.89
+voto2t_3,1,Lula,Lula,530,42.79
+voto2t_3,2,Bolsonaro,Bolsonaro,399,34.43
+voto2t_3,3,"Branco, nulo ou não votou","Branco, nulo ou não votou",274,22.78
+cen2_votou_1t_govrj,1,CLÁUDIO CASTRO,CLÁUDIO CASTRO,405,40.87
+cen2_votou_1t_govrj,2,CYRO GARCIA,CYRO GARCIA,20,1.89
+cen2_votou_1t_govrj,3,EDUARDO SERRA,EDUARDO SERRA,10,1.14
+cen2_votou_1t_govrj,4,JULIETE PANTOJA,JULIETE PANTOJA,6,0.58
+cen2_votou_1t_govrj,5,LUIZ EUGÊNIO,LUIZ EUGÊNIO,2,0.2
+cen2_votou_1t_govrj,6,MARCELO FREIXO,MARCELO FREIXO,181,16.7
+cen2_votou_1t_govrj,7,PAULO GANIME,PAULO GANIME,10,1.02
+cen2_votou_1t_govrj,8,RODRIGO NEVES,RODRIGO NEVES,39,3.67
+cen2_votou_1t_govrj,9,WILSON WITZEL,WILSON WITZEL,41,4.44
+cen2_votou_1t_govrj,10,VOTOU BRANCO/NULO,VOTOU BRANCO/NULO,186,18.15
+cen2_votou_1t_govrj,11,NÃO QUIS RESPONDER (NÃO LER),NÃO QUIS RESPONDER (NÃO LER),113,11.35
+gov_cat,1,Castro,Castro,405,33.69
+gov_cat,2,Freixo,Freixo,181,13.77
+gov_cat,3,Outros candidatos,Outros candidatos,128,10.66
+gov_cat,4,Branco ou nulo,Branco ou nulo,186,14.96
+gov_cat,5,Não votou no 1º turno,Não votou no 1º turno,213,17.31
+gov_cat,6,Não sabe ou não respondeu,Não sabe ou não respondeu,116,9.61
+gov_2,1,Castro,Castro,405,70.99
+gov_2,2,Freixo,Freixo,181,29.01
+cen_t2_18,1,JAIR BOLSONARO,JAIR BOLSONARO,528,43.58
+cen_t2_18,2,FERNANDO HADDAD,FERNANDO HADDAD,328,26.15
+cen_t2_18,3,BRANCO/NULO/NENHUM DESSES (NÃO LER),BRANCO/NULO/NENHUM DESSES (NÃO LER),259,20.1
+cen_t2_18,4,NÃO SABE/NÃO LEMBRA (NÃO LER),NÃO SABE/NÃO LEMBRA (NÃO LER),87,7.47
+cen_t2_18,5,NÃO QUIS RESPONDER (NÃO LER),NÃO QUIS RESPONDER (NÃO LER),27,2.7
+adpi1_lula,1,ÓTIMO,ÓTIMO,150,12.42
+adpi1_lula,2,BOM,BOM,318,25.29
+adpi1_lula,3,REGULAR MAIS PARA POSITIVO,REGULAR MAIS PARA POSITIVO,257,19.9
+adpi1_lula,4,REGULAR MAIS PARA NEGATIVO,REGULAR MAIS PARA NEGATIVO,132,10.73
+adpi1_lula,5,RUIM,RUIM,95,7.86
+adpi1_lula,6,PÉSSIMO,PÉSSIMO,216,18.78
+adpi1_lula,7,NÃO SABE RESPONDER (NÃO LER),NÃO SABE RESPONDER (NÃO LER),49,3.93
+adpi1_lula,8,NÃO QUIS RESPONDER (NÃO LER),NÃO QUIS RESPONDER (NÃO LER),12,1.08
+aval_lula3,1,Ótimo ou bom,Ótimo ou bom,468,37.71
+aval_lula3,2,Regular,Regular,389,30.63
+aval_lula3,3,Ruim ou péssimo,Ruim ou péssimo,311,26.65
+aval_lula3,4,Não sabe ou não respondeu,Não sabe ou não respondeu,61,5.01
+adpi1_gov,1,ÓTIMO,ÓTIMO,42,3.72
+adpi1_gov,2,BOM,BOM,244,20.07
+adpi1_gov,3,REGULAR MAIS PARA POSITIVO,REGULAR MAIS PARA POSITIVO,276,23.7
+adpi1_gov,4,REGULAR MAIS PARA NEGATIVO,REGULAR MAIS PARA NEGATIVO,182,13.94
+adpi1_gov,5,RUIM,RUIM,151,12.12
+adpi1_gov,6,PÉSSIMO,PÉSSIMO,205,15.96
+adpi1_gov,7,NÃO SABE RESPONDER (NÃO LER),NÃO SABE RESPONDER (NÃO LER),120,9.77
+adpi1_gov,8,NÃO QUIS RESPONDER (NÃO LER),NÃO QUIS RESPONDER (NÃO LER),9,0.72
+aval_gov3,1,Ótimo ou bom,Ótimo ou bom,286,23.79
+aval_gov3,2,Regular,Regular,458,37.63
+aval_gov3,3,Ruim ou péssimo,Ruim ou péssimo,356,28.09
+aval_gov3,4,Não sabe ou não respondeu,Não sabe ou não respondeu,129,10.49
+ideologia,1,ESQUERDA,ESQUERDA,250,19.31
+ideologia,2,CENTRO-ESQUERDA,CENTRO-ESQUERDA,34,2.95
+ideologia,3,CENTRO,CENTRO,135,10.94
+ideologia,4,CENTRO-DIREITA,CENTRO-DIREITA,40,3
+ideologia,5,DIREITA,DIREITA,340,29.03
+ideologia,6,NÃO ME IDENTIFICO COM NENHUMA IDEOLOGIA (NÃO LER),NÃO ME IDENTIFICO COM NENHUMA IDEOLOGIA (NÃO LER),352,27.96
+ideologia,7,NÃO SABE RESPONDER (NÃO LER),NÃO SABE RESPONDER (NÃO LER),73,6.25
+ideologia,8,NÃO QUIS RESPONDER (NÃO LER),NÃO QUIS RESPONDER (NÃO LER),5,0.57
+ideologia_grp,1,Esquerda,Esquerda,284,22.26
+ideologia_grp,2,Centro,Centro,135,10.94
+ideologia_grp,3,Direita,Direita,380,32.03
+ideologia_grp,4,Nenhuma,Nenhuma,352,27.96
+ideologia_grp,5,Não sabe ou não respondeu,Não sabe ou não respondeu,78,6.82
+part_pref,1,NENHUM/NÃO TENHO PARTIDO POLÍTICO PREFERIDO,NENHUM/NÃO TENHO PARTIDO POLÍTICO PREFERIDO,683,54.65
+part_pref,2,PT,PT,263,20.56
+part_pref,3,PL,PL,105,9.22
+part_pref,4,MDB,MDB,6,0.61
+part_pref,5,PP,PP,1,0.13
+part_pref,6,UNIÃO BRASIL,UNIÃO BRASIL,5,0.44
+part_pref,7,PSL,PSL,5,0.42
+part_pref,8,PSD,PSD,4,0.25
+part_pref,9,PDT,PDT,29,2.41
+part_pref,10,PSB,PSB,2,0.15
+part_pref,11,PSOL,PSOL,32,2.55
+part_pref,12,OUTRO. QUAL? ABERTA,OUTRO. QUAL? ABERTA,27,2.33
+part_pref,13,NÃO SABE RESPONDER (NÃO LER),NÃO SABE RESPONDER (NÃO LER),58,5.23
+part_pref,14,NÃO QUIS RESPONDER (NÃO LER),NÃO QUIS RESPONDER (NÃO LER),9,1.04
+part_pref_grp,1,PT,PT,263,20.56
+part_pref_grp,2,PL,PL,105,9.22
+part_pref_grp,3,Outros partidos,Outros partidos,111,9.3
+part_pref_grp,4,Nenhum,Nenhum,683,54.65
+part_pref_grp,5,Não sabe ou não respondeu,Não sabe ou não respondeu,67,6.27

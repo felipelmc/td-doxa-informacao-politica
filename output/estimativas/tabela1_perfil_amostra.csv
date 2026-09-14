@@ -1,0 +1,22 @@
+variavel,rotulo_variavel,categoria,rotulo,n,pct_amostra,pct_censo,pct_ponderada
+sexo,Sexo,FEMININO,Mulheres,666,54.19039869812856,53.826956741092694,53.826956741073055
+sexo,Sexo,MASCULINO,Homens,563,45.80960130187144,46.173043258907306,46.17304325892696
+idadef,Faixa etária,18 - 24 ANOS,18 a 24 anos,144,11.716842961757527,12.369601855794741,12.369601855819218
+idadef,Faixa etária,25 - 34 ANOS,25 a 34 anos,236,19.20260374288039,18.42505570865269,18.425055708591994
+idadef,Faixa etária,35 - 44 ANOS,35 a 44 anos,250,20.34174125305126,19.825405688855234,19.825405688568495
+idadef,Faixa etária,45 - 59 ANOS,45 a 59 anos,305,24.81692432872254,25.20480549617379,25.204805496294004
+idadef,Faixa etária,60 ANOS OU MAIS,60 anos ou mais,294,23.921887713588283,24.17513125052355,24.175131250726288
+esc_faixa,Escolaridade,Sem instrução e fundamental incompleto,Sem instrução ou fundamental incompleto,269,21.887713588283155,25.60502243367058,25.605022433675547
+esc_faixa,Escolaridade,Fundamental completo e médio incompleto,Fundamental completo ou médio incompleto,201,16.354759967453212,16.5642539840886,16.56425398409738
+esc_faixa,Escolaridade,Médio completo e superior incompleto,Médio completo ou superior incompleto,541,44.01952807160293,40.0022857277285,40.00228572773215
+esc_faixa,Escolaridade,Superior completo,Superior completo,218,17.737998372660698,17.828437854512316,17.828437854494936
+cor,Cor ou raça,BRANCA,Branca,340,27.664768104149715,42.511666669050946,42.51166666905099
+cor,Cor ou raça,PRETA,Preta,323,26.28152969894223,16.93605827683787,16.936058276837894
+cor,Cor ou raça,PARDA,Parda,528,42.961757526444266,40.298627625546935,40.29862762554687
+cor,Cor ou raça,OUTRA,Amarela ou indígena,38,3.091944670463792,0.25364742856425304,0.2536474285642532
+area3,Região,RIO CAPITAL,Capital,499,40.60211554109032,39.37199392231673,39.371993922306395
+area3,Região,RM (EXCETO CAPITAL),Região Metropolitana (exceto capital),415,33.76729048006509,35.78643736907334,35.786437369079046
+area3,Região,DEMAIS MUNICÍPIOS,Demais municípios,315,25.63059397884459,24.84156870860993,24.841568708614567
+renda_grp,Renda familiar mensal (faixas agregadas),Até 2 salários mínimos,Até 2 salários mínimos,497,40.439381611065905,,41.730150767799636
+renda_grp,Renda familiar mensal (faixas agregadas),Mais de 2 a 5 salários mínimos,Mais de 2 a 5 salários mínimos,424,34.499593165174936,,33.18826366130656
+renda_grp,Renda familiar mensal (faixas agregadas),Mais de 5 salários mínimos,Mais de 5 salários mínimos,308,25.061025223759152,,25.0815855708938

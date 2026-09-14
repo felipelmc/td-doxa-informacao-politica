@@ -1,0 +1,13 @@
+especificacao,indicador,estimativa_pct,erro_padrao_pp
+"sem conglomerado, pesos calibrados",diario,20.534727124586983,1.2563423863244727
+"sem conglomerado, pesos calibrados",nunca,26.796840748466895,1.4007393120234155
+"sem conglomerado, pesos calibrados",tv,39.40976957869752,1.5217466744726853
+"sem conglomerado, pesos calibrados",redes,19.67195243989034,1.218798554763142
+"setor como conglomerado, pesos calibrados",diario,20.534727124586983,1.4666958253770237
+"setor como conglomerado, pesos calibrados",nunca,26.796840748466895,1.6681065315799697
+"setor como conglomerado, pesos calibrados",tv,39.40976957869752,1.6215670380642064
+"setor como conglomerado, pesos calibrados",redes,19.67195243989034,1.2814670287987138
+setor como conglomerado + calibração (usado no TD),diario,20.534727124586983,1.3217318890330934
+setor como conglomerado + calibração (usado no TD),nunca,26.796840748466895,1.4756837069845221
+setor como conglomerado + calibração (usado no TD),tv,39.40976957869752,1.5738869889685463
+setor como conglomerado + calibração (usado no TD),redes,19.67195243989034,1.2398796338371751
