@@ -1,0 +1,48 @@
+variavel,categoria,pct_TV,pct_Internet,n_grupo_TV,n_grupo_Internet,instavel_TV,instavel_Internet,pct_total,rotulo_variavel,rotulo,ordem_variavel,ordem
+sexo,FEMININO,57.69180569610178,51.330593212655394,472,429,FALSE,FALSE,53.82695673507442,Sexo,Mulheres,1,1
+sexo,MASCULINO,42.30819430389821,48.66940678734461,472,429,FALSE,FALSE,46.17304326492558,Sexo,Homens,1,2
+idadef,18 - 24 ANOS,7.1432977257484165,15.893762403072515,472,429,FALSE,FALSE,12.369601855856365,Faixa etária,18 a 24 anos,2,1
+idadef,25 - 34 ANOS,15.13725860917107,24.467293266116684,472,429,FALSE,FALSE,18.425055708594396,Faixa etária,25 a 34 anos,2,2
+idadef,35 - 44 ANOS,20.71978658556024,19.914480970280753,472,429,FALSE,FALSE,19.825405688592777,Faixa etária,35 a 44 anos,2,3
+idadef,45 - 59 ANOS,26.064900394649126,23.634492969101796,472,429,FALSE,FALSE,25.20480549655375,Faixa etária,45 a 59 anos,2,4
+idadef,60 ANOS OU MAIS,30.934756753070925,16.089970391484517,472,429,FALSE,FALSE,24.175131250912656,Faixa etária,60 anos ou mais,2,5
+esc_faixa,Sem instrução e fundamental incompleto,29.47538419161326,9.291740819331789,472,429,FALSE,FALSE,25.605022435194662,Escolaridade,Sem instrução ou fundamental incompleto,3,1
+esc_faixa,Fundamental completo e médio incompleto,17.7526795972065,16.55500873436261,472,429,FALSE,FALSE,16.56425398409749,Escolaridade,Fundamental completo ou médio incompleto,3,2
+esc_faixa,Médio completo e superior incompleto,39.41754117091589,48.0364937736213,472,429,FALSE,FALSE,40.00228572773213,Escolaridade,Médio completo ou superior incompleto,3,3
+esc_faixa,Superior completo,13.35439504026862,26.116756672813544,472,429,FALSE,FALSE,17.828437854495593,Escolaridade,Superior completo,3,4
+cor,BRANCA,43.184671121747215,44.11258196391384,472,429,FALSE,FALSE,42.511666669054414,Cor ou raça,Branca,4,1
+cor,PRETA,16.709579839250818,17.173097914687617,472,429,FALSE,FALSE,16.93605833753201,Cor ou raça,Preta,4,2
+cor,PARDA,39.9546774779411,38.41950374066242,472,429,FALSE,FALSE,40.298627631221954,Cor ou raça,Parda,4,3
+cor,OUTRA,0.15107159975179066,0.29481646058527167,472,429,TRUE,TRUE,0.2536474346198754,Cor ou raça,Amarela ou indígena,4,4
+renda_grp,Até 2 salários mínimos,47.47735178861381,30.49064817359204,472,429,FALSE,FALSE,41.730150767799614,Renda familiar mensal (faixas agregadas),Até 2 salários mínimos,5,1
+renda_grp,Mais de 2 a 5 salários mínimos,31.845015711093104,36.290828288980535,472,429,FALSE,FALSE,33.18826366131125,Renda familiar mensal (faixas agregadas),Mais de 2 a 5 salários mínimos,5,2
+renda_grp,Mais de 5 salários mínimos,20.677632527284402,33.21852383316993,472,429,FALSE,FALSE,25.08158557107867,Renda familiar mensal (faixas agregadas),Mais de 5 salários mínimos,5,3
+area3,RIO CAPITAL,37.56589799495904,41.51261158785279,472,429,FALSE,FALSE,39.371993922306395,Região,Capital,6,1
+area3,RM (EXCETO CAPITAL),35.98670067451242,34.33807932195563,472,429,FALSE,FALSE,35.786437369085874,Região,Região Metropolitana (exceto capital),6,2
+area3,DEMAIS MUNICÍPIOS,26.447401334599835,24.149309127220533,472,429,FALSE,FALSE,24.84156870874198,Região,Demais municípios,6,3
+freq4,Todo dia,24.063872443434732,25.730185009934903,469,428,FALSE,FALSE,20.70336313227341,Frequência com que se informa sobre política (4 categorias),Todo dia,7,1
+freq4,Toda semana,18.169417658149445,24.22290121751061,469,428,FALSE,FALSE,18.268407081903714,Frequência com que se informa sobre política (4 categorias),Toda semana,7,2
+freq4,Mensal ou raramente,37.147896514998415,37.91906767813488,469,428,FALSE,FALSE,34.01132708030911,Frequência com que se informa sobre política (4 categorias),Mensal ou raramente,7,3
+freq4,Nunca,20.61881338356255,12.127846095485104,469,428,FALSE,FALSE,27.01690270600217,Frequência com que se informa sobre política (4 categorias),Nunca,7,4
+redes_grp,Não usa redes sociais,33.269730999251635,4.919753099096711,472,429,FALSE,FALSE,28.943543501421402,Rede social mais usada para se informar sobre política (agregada),Não usa redes sociais,8,1
+redes_grp,Facebook,20.72724455460846,24.08950630213119,472,429,FALSE,FALSE,20.148211321219975,Rede social mais usada para se informar sobre política (agregada),Facebook,8,2
+redes_grp,Instagram,12.766151394259854,24.740774589007426,472,429,FALSE,FALSE,14.750960782822078,Rede social mais usada para se informar sobre política (agregada),Instagram,8,3
+redes_grp,WhatsApp ou Telegram,11.894932948974901,11.12266366566428,472,429,FALSE,FALSE,11.162810862682946,Rede social mais usada para se informar sobre política (agregada),WhatsApp ou Telegram,8,4
+redes_grp,YouTube,9.248012946241879,13.3017197006314,472,429,FALSE,FALSE,9.527323278757006,Rede social mais usada para se informar sobre política (agregada),YouTube,8,5
+redes_grp,Twitter (X),3.3749490382351635,12.708741415866182,472,429,FALSE,FALSE,6.307516479504748,Rede social mais usada para se informar sobre política (agregada),Twitter (X),8,6
+redes_grp,Outras respostas,8.718978147904897,9.116841366228003,472,429,FALSE,FALSE,9.15963397388378,Rede social mais usada para se informar sobre política (agregada),Outras respostas,8,7
+usa_rede_politica,Sim,63.30602370997093,90.76122429285367,454,426,FALSE,FALSE,67.60488170737325,,Sim,9,1
+usa_rede_politica,Não,36.69397629002909,9.238775707146333,454,426,FALSE,FALSE,32.39511829262674,,Não,9,2
+ideologia_grp,Esquerda,21.529402432497985,28.7773284504602,472,429,FALSE,FALSE,22.25922857392147,Posição ideológica (agregada),Esquerda,10,1
+ideologia_grp,Centro,10.435827030058537,11.947198350340877,472,429,FALSE,FALSE,10.93953368985434,Posição ideológica (agregada),Centro,10,2
+ideologia_grp,Direita,31.30748608973744,38.68666269305641,472,429,FALSE,FALSE,32.02815361484567,Posição ideológica (agregada),Direita,10,3
+ideologia_grp,Nenhuma,30.019228526772963,17.406510239792837,472,429,FALSE,FALSE,27.95505095425953,Posição ideológica (agregada),Nenhuma,10,4
+ideologia_grp,Não sabe ou não respondeu,6.70805641732499,3.182300267139039,472,429,FALSE,FALSE,6.818033172620798,Posição ideológica (agregada),Não sabe ou não respondeu,10,5
+part_pref_grp,PT,25.289338092529245,20.536849914679348,472,429,FALSE,FALSE,20.561687874020272,Partido preferido (agregado),PT,11,1
+part_pref_grp,PL,5.37531939458148,16.413197734552227,472,429,FALSE,FALSE,9.216704416911519,Partido preferido (agregado),PL,11,2
+part_pref_grp,Outros partidos,8.172893834630747,11.635237284301365,472,429,FALSE,FALSE,9.30319454035188,Partido preferido (agregado),Outros partidos,11,3
+part_pref_grp,Nenhum,53.99639920822569,47.800285947692025,472,429,FALSE,FALSE,54.64709483258534,Partido preferido (agregado),Nenhum,11,4
+part_pref_grp,Não sabe ou não respondeu,7.166049584037159,3.6144291188442352,472,429,FALSE,FALSE,6.2713185457172385,Partido preferido (agregado),Não sabe ou não respondeu,11,5
+voto2t_3,Lula,48.85008932159028,39.32969204431063,464,427,FALSE,FALSE,42.7925324740401,Voto declarado para presidente no 2º turno de 2022 (3 grupos),Lula,12,1
+voto2t_3,Bolsonaro,31.365395022363035,40.82881905532349,464,427,FALSE,FALSE,34.42761355000955,Voto declarado para presidente no 2º turno de 2022 (3 grupos),Bolsonaro,12,2
+voto2t_3,"Branco, nulo ou não votou",19.784515656048708,19.841488900460398,464,427,FALSE,FALSE,22.779853976321444,Voto declarado para presidente no 2º turno de 2022 (3 grupos),"Branco, nulo ou não votou",12,3

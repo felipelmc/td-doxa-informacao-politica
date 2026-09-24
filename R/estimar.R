@@ -99,24 +99,3 @@ diferenca_categorias <- function(design, var, a, b, dominio = NULL) {
     p_valor = 2 * stats::pt(abs(coef / ep), gl, lower.tail = FALSE), n = sum(ativos(sub))
   )
 }
-
-# Teste de independência de Rao-Scott (estatística F) para o cruzamento de duas variáveis.
-teste_rao_scott <- function(design, var1, var2, dominio = NULL) {
-  dados <- design$variables
-  validos <- !is.na(dados[[var1]]) & !is.na(dados[[var2]])
-  if (!is.null(dominio)) validos <- validos & (eval(dominio, dados) %in% TRUE)
-  sub <- subset(design, validos)
-  ok <- ativos(sub)
-  niveis <- function(v) unique(as.character(sub$variables[[v]][ok]))
-  sub <- stats::update(
-    sub,
-    .v1 = factor(ifelse(ok, as.character(sub$variables[[var1]]), NA), levels = niveis(var1)),
-    .v2 = factor(ifelse(ok, as.character(sub$variables[[var2]]), NA), levels = niveis(var2))
-  )
-  t <- survey::svychisq(~.v1 + .v2, sub, statistic = "F", na.rm = TRUE)
-  tibble::tibble(
-    variavel_1 = var1, variavel_2 = var2, dominio = if (is.null(dominio)) NA_character_ else deparse(dominio),
-    estatistica_f = unname(t$statistic), gl_num = unname(t$parameter[1]), gl_den = unname(t$parameter[2]),
-    p_valor = unname(t$p.value), n = sum(ok)
-  )
-}

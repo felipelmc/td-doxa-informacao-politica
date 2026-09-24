@@ -44,7 +44,7 @@ TD; o banco completo da Quaest não é distribuído.
 | `01_limpeza.R` | Lê o banco bruto, seleciona variáveis, recodifica escolaridade, cor e região, remove menores de 18 anos e quem não informou cor |
 | `02_pesos.R` | Calibra os pesos por _raking_ às margens do Censo 2022 e grava os diagnósticos |
 | `03_banco_analise.R` | Cria as variáveis derivadas e grava o banco de análise e os dicionários |
-| `04_estimativas.R` | Calcula proporções, diferenças, testes, tabelas e anexos |
+| `04_estimativas.R` | Calcula proporções, diferenças entre grupos e tabelas, e compara o voto declarado com o resultado do TSE |
 | `05_figuras.R` | Desenha os gráficos do TD |
 
 ## Amostra, pesos e incerteza
@@ -65,14 +65,13 @@ TD; o banco completo da Quaest não é distribuído.
 
 | No TD | Arquivo |
 |---|---|
-| Gráficos 1 a 7 | `output/figuras/grafico1_frequencia` a `grafico7_avaliacao_fonte` (`.pdf` e `.png`) |
+| Gráficos 1 a 9 | `output/figuras/grafico1_frequencia` a `grafico9_avaliacao_regiao` (`.pdf` e `.png`) |
 | Tabela 1 | `output/estimativas/tabela1_perfil_amostra.csv` |
-| Tabela 2 | `output/estimativas/tabela2_nunca_regiao_sexo.csv` |
-| Tabela 3 | `output/estimativas/tabela3_perfil_tv_internet.csv` |
-| Tabela 4 | `output/estimativas/tabela4_informacao_opiniao.csv` |
-| Anexo A (Tabelas 5 e 6) | `output/estimativas/testes.csv` e `diferencas.csv` |
-| Anexo B (Tabelas 7 e 8) | `output/estimativas/anexo_b_validacao_tse.csv` e `anexo_b_sensibilidade_voto.csv` |
-| Números citados no texto | `output/estimativas/proporcoes.csv` e `diferencas.csv`, lidos pelo `.qmd` |
+| Tabela 2 | `output/estimativas/tabela2_perfil_tv_internet.csv` |
+| Tabela 3 | `output/estimativas/tabela3_informacao_opiniao.csv` |
+| Voto declarado e resultado do TSE (seção 2) | `output/estimativas/voto_declarado_tse.csv` |
+| Números citados no texto | `output/estimativas/proporcoes.csv`, lido pelo `.qmd` |
+| Comparações entre grupos citadas no texto | `output/estimativas/diferencas.csv` (diferença em pontos percentuais, IC 95% e p-valor; `ic_exclui_zero = FALSE` indica diferença dentro da margem de erro) |
 
 ## Dados e licença
 

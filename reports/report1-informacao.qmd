@@ -38,6 +38,13 @@ format:
         \usepackage{caption}
         \captionsetup{labelsep=endash, justification=raggedright, singlelinecheck=false, font=small}
         \setlength{\parindent}{1.25cm}
+        % gráficos e tabelas não passam para a seção seguinte
+        \usepackage[section]{placeins}
+        % tabelas e gráficos altos podem dividir a página com o texto, em vez de ocupar uma página sozinhos
+        \renewcommand{\topfraction}{0.9}
+        \renewcommand{\bottomfraction}{0.8}
+        \renewcommand{\textfraction}{0.1}
+        \renewcommand{\floatpagefraction}{0.8}
 execute:
   echo: false
   warning: false
@@ -63,13 +70,9 @@ source(here::here("R/formatar.R"))
 
 ler_estimativa <- function(nome) readRDS(here::here("output/estimativas", paste0(nome, ".rds")))
 P <- ler_estimativa("proporcoes")
-D <- ler_estimativa("diferencas")
-testes <- ler_estimativa("testes")
-validacao <- ler_estimativa("anexo_b_validacao_tse")
-sensibilidade <- ler_estimativa("anexo_b_sensibilidade_voto")
+voto_tse <- ler_estimativa("voto_declarado_tse")
 banco <- readRDS(here::here("data/analysis/td_informacao.rds"))
 fluxo <- readr::read_csv(here::here("output/diagnosticos/fluxo_amostra.csv"), show_col_types = FALSE)
-pesos <- readr::read_csv(here::here("output/diagnosticos/pesos_resumo.csv"), show_col_types = FALSE)
 
 url_repositorio <- "https://github.com/felipelmc/td-doxa-informacao-politica"
 
@@ -80,16 +83,14 @@ pr <- function(..., digitos = 0) {
   fmt_pct(l$pct, digitos)
 }
 prv <- function(...) buscar_prop(P, ...)$pct
-dif <- function(id, ...) txt_dif(D, id, ...)
+soma <- function(variavel, categorias, ...) fmt_pct(sum(purrr::map_dbl(categorias, \(k) prv(variavel, k, ...))))
 n_etapa <- function(padrao) fluxo$n[grepl(padrao, fluxo$etapa)]
-tse <- function(padrao, coluna = "tse") fmt_pct(validacao[[coluna]][grepl(padrao, validacao$resultado, fixed = TRUE)], 1)
+tse <- function(padrao, coluna = "tse") fmt_pct(voto_tse[[coluna]][grepl(padrao, voto_tse$resultado, fixed = TRUE)], 1)
 
-rara_nunca <- fmt_pct(prv("freq_inf_pol", "RARAMENTE") + prv("freq_inf_pol", "NUNCA"))
-jovens <- function(g) fmt_pct(prv("idadef", "18 - 24 ANOS", "fonte4", g) + prv("idadef", "25 - 34 ANOS", "fonte4", g))
-sem_opiniao <- function(variavel, categorias, grupo) {
-  fmt_pct(sum(purrr::map_dbl(categorias, \(k) prv(variavel, k, "freq4", grupo))))
-}
-cobertura_gov <- fmt_pct(100 * mean(!is.na(banco$gov_2)))
+rara_nunca <- soma("freq_inf_pol", c("RARAMENTE", "NUNCA"))
+jovens <- function(g) soma("idadef", c("18 - 24 ANOS", "25 - 34 ANOS"), "fonte4", g)
+baixa <- c("Mensal ou raramente", "Nunca")
+sem_opiniao <- function(variavel, categorias, grupo) soma(variavel, categorias, "freq4", grupo)
 
 figura <- function(nome) knitr::include_graphics(here::here("output/figuras", paste0(nome, ".pdf")))
 nota_fonte_tabela <- "Elaboração própria, com dados do survey DOXA/Quaest (jul. 2023)."
@@ -106,35 +107,21 @@ fonte_tabela <- function(k, texto) {
 
 # Resumo {.unnumbered}
 
-Este texto analisa como a população do estado do Rio de Janeiro se informa sobre política, a partir de um _survey_ realizado pelo DOXA em parceria com a Quaest em julho de 2023. Cerca de `r pr("freq4", "Todo dia")` dos fluminenses dizem se informar sobre política todos os dias, enquanto `r rara_nunca` o fazem raramente ou nunca. O noticiário da TV é a fonte individual mais citada (`r pr("fonte4", "TV")`), mas as fontes digitais, somadas, chegam a `r pr("fonte4", "Internet")` e predominam entre os mais jovens e os mais escolarizados. Quem se informa principalmente pela TV e quem se informa principalmente pela internet formam públicos distintos, sobretudo em idade e escolaridade. Os eleitores de Lula se informam mais pela TV, e os de Bolsonaro recorrem mais às redes sociais e aos aplicativos de mensagem. Quem nunca se informa sobre política também declara com mais frequência não saber avaliar o governo estadual e não se identificar com ideologias ou partidos.
+Este texto analisa como a população do estado do Rio de Janeiro se informa sobre política, a partir de um _survey_ realizado pelo DOXA em parceria com a Quaest em julho de 2023. Cerca de `r pr("freq4", "Todo dia")` dos fluminenses dizem se informar sobre política todos os dias, enquanto `r rara_nunca` o fazem raramente ou nunca. O noticiário da TV segue como a principal fonte de informação política, mas as redes sociais têm um espaço de destaque, sobretudo entre os eleitores de Bolsonaro. A capital tem uma proporção menor de pessoas que nunca se informam sobre política do que o restante do estado. Quem se informa principalmente pela TV e quem se informa principalmente pela internet formam públicos distintos, sobretudo em idade e escolaridade. A aprovação do governo Lula era maior entre quem se informa pela TV, e quem nunca se informa sobre política declara com mais frequência não saber avaliar o governo estadual e não se identificar com ideologias ou partidos.
 
 # Introdução
 
 Este documento apresenta uma análise detalhada do _survey_ realizado pelo Laboratório de Estudos Eleitorais, de Comunicação Política e Opinião Pública do IESP-UERJ (DOXA), em parceria com a Quaest. Os dados foram coletados em julho de 2023 no estado do Rio de Janeiro, com o objetivo de compreender diferentes dimensões do comportamento político e informacional da população fluminense.
 
-O _survey_ contempla um amplo conjunto de temas, entre eles avaliações de governo e atitudes políticas. O presente texto, em particular, concentra-se em compreender como os fluminenses acessam informações sobre política e de que forma esses padrões de acesso se relacionam com suas preferências eleitorais.
+O _survey_ contempla um amplo conjunto de temas, que permite examinar desde questões relativas à percepção sobre a pandemia de Covid-19 até avaliações de governo, atitudes políticas e até mesmo resultados de um experimento _conjoint_ aplicado durante a pesquisa. O presente texto, em particular, concentra-se especificamente em compreender como os fluminenses acessam informações sobre política e de que forma esses padrões de acesso se relacionam com suas preferências eleitorais.
 
-De forma antecipada, é possível destacar alguns achados centrais. O noticiário da TV é a fonte individual mais utilizada para se informar sobre política, mas as fontes digitais, somadas, ficam pouco atrás e predominam entre os mais jovens e os mais escolarizados. Quem se informa principalmente pela TV e quem se informa principalmente pela internet formam dois públicos com perfis distintos. Entre os eleitores de Bolsonaro e os simpatizantes do PL, as redes sociais e os aplicativos de mensagem têm peso maior como fonte de informação. Os padrões de consumo de informação variam mais segundo a escolaridade e o perfil eleitoral do que segundo a região do estado.
+De forma antecipada, é possível destacar alguns achados centrais: a televisão segue como principal fonte de informação política, ainda que as redes sociais desempenhem um papel crescente entre determinados grupos populacionais, sobretudo num segmento mais à direita. Além disso, observa-se que os padrões de consumo de informação variam segundo região e perfil eleitoral. Quem se informa principalmente pela TV e quem se informa principalmente pela internet formam, ainda, públicos com perfis distintos, e quem nunca se informa sobre política declara com mais frequência não ter opinião sobre o governo estadual, ideologias e partidos.
 
-Este texto se divide em seis seções, incluindo esta introdução. A @sec-dados descreve os dados e as escolhas metodológicas. A @sec-frequencia apresenta a frequência com que os fluminenses se informam sobre política e as fontes que utilizam, e a @sec-publicos compara o perfil de quem se informa principalmente pela TV e pela internet. A @sec-politica relaciona o acesso à informação ao voto declarado, à avaliação dos governos e à formação de opinião. A @sec-consideracoes reúne as considerações finais e os limites da análise.
+Este texto se divide em quatro seções, incluindo esta introdução. A @sec-metodologia apresenta as questões metodológicas. A @sec-analise analisa a frequência com que os fluminenses se informam sobre política e as fontes que utilizam, as diferenças entre as regiões do estado, o perfil de quem se informa pela TV e pela internet e a relação entre acesso à informação, preferências eleitorais, avaliação de governo e formação de opinião. A @sec-consideracoes reúne as considerações finais.
 
-# Dados e métodos {#sec-dados}
+# Questões metodológicas {#sec-metodologia}
 
-O _survey_ foi aplicado pela Quaest em julho de 2023, com amostragem por cotas em `r n_distinct(banco$cod_setor)` setores censitários de `r n_distinct(banco$cod_ibge)` municípios do estado, e reuniu `r fmt_int(n_etapa("bruto"))` entrevistas.
-
-Antes de passarmos à análise dos dados propriamente dita, cabem algumas ponderações metodológicas. De saída, foi realizada uma análise preliminar do perfil amostral para verificar se as distribuições marginais das variáveis demográficas se assemelhavam ao perfil da população do estado. Alguns ajustes foram necessários e, portanto, os pesos amostrais foram calibrados a partir dos dados do Censo de 2022. Mais especificamente, a amostra foi calibrada por _raking_ às distribuições de sexo, faixa etária e nível de instrução dentro de cada região geográfica -- neste caso, dividindo entre a capital, a região metropolitana e os demais municípios do estado --, além da distribuição de cor ou raça. O _raking_ ajusta os pesos até que a amostra reproduza cada uma dessas distribuições, sem exigir entrevistas em todas as combinações possíveis das variáveis. A região metropolitana segue a composição definida pela Lei Complementar estadual nº 184/2018, que inclui Petrópolis. O perfil da amostra, antes e depois da ponderação, está indicado na @tbl-perfil-amostral. O efeito de desenho decorrente da ponderação é de `r fmt_num(pesos$deff_kish, 2)`, o que equivale, em termos de precisão, a uma amostra aleatória simples de cerca de `r fmt_int(round(pesos$n_efetivo, -1))` entrevistas.
-
-Respondentes com menos de 18 anos foram removidos da amostra (`r n_etapa("Menos de 18")` entrevistas, ou `r fmt_pct(100 * n_etapa("Menos de 18") / n_etapa("bruto"), 1)` do total). Trata-se de uma decisão necessária para a ponderação, já que a tabela do Censo usada na calibração cobre apenas a população com 18 anos ou mais. Também foram excluídos `r n_etapa("cor")` respondentes que não informaram cor ou raça, variável usada na ponderação, o que resulta em `r fmt_int(n_etapa("analisada"))` entrevistas analisadas. Vale reforçar, portanto, que as análises podem ser generalizadas apenas para a população com pelo menos 18 anos de idade.
-
-Os intervalos de confiança apresentados ao longo do texto levam em conta o agrupamento das entrevistas por setor censitário e a calibração dos pesos, e são calculados em escala logit, o que os mantém entre 0% e 100%. Como a amostra foi selecionada por cotas, e não por sorteio, esses intervalos devem ser lidos como aproximações. Eles supõem que, dentro das categorias usadas na ponderação, os entrevistados se comportam como uma amostra aleatória da população, e não incorporam erros de outra natureza, como os de cobertura ou de mensuração.
-
-Um ponto de atenção é que o tamanho limitado da amostra nos leva a margens de erro maiores, sobretudo quando consideramos as subamostras (por exemplo, quando dividimos a amostra em regiões geográficas ou em grupos de eleitores). Considerando essas limitações, só destacamos no texto as diferenças entre grupos, medidas em pontos percentuais (p.p.), cujo intervalo de confiança de 95% não inclui o zero, e não interpretamos estimativas baseadas em menos de 30 entrevistas ou com coeficiente de variação acima de 30%. Os testes e os intervalos das diferenças citadas estão no Anexo A. Dado o caráter exploratório da análise, não aplicamos correções para comparações múltiplas.
-
-As preferências eleitorais são medidas pelo voto declarado nas eleições de 2022, o que exige cautela. Entre os entrevistados que declararam voto em Lula ou em Bolsonaro no 2º turno, `r tse("2º turno de 2022: Lula", "pesos_principais")` escolheram Lula, enquanto o resultado oficial no estado foi de `r tse("2º turno de 2022: Lula")`, segundo o Tribunal Superior Eleitoral (TSE). O voto declarado para governador, por outro lado, fica próximo do resultado oficial (Anexo B). Esse padrão é compatível com erro de declaração no voto presidencial, como o de eleitores que dizem ter votado no candidato vencedor, e não apenas com um desequilíbrio na composição da amostra. Por isso, os pesos não foram calibrados pelo voto. No Anexo B, mostramos que uma calibração adicional pelo resultado do 2º turno praticamente não altera as estimativas sobre informação política.
-
-Por fim, para tornar os cruzamentos mais estáveis, algumas variáveis foram agregadas. A frequência com que o entrevistado se informa sobre política foi reduzida a quatro categorias: todo dia, toda semana, mensal ou raramente e nunca. As fontes de informação foram agrupadas em (i) TV; (ii) internet, que reúne redes sociais, aplicativos de mensagem, sites e portais de notícias e buscas no Google; (iii) outras fontes, como rádio, jornais e conversas; e (iv) não se informa, que reúne quem respondeu "nenhum destes", "não me informo sobre política" ou não soube responder. Nas análises sobre política, a internet é dividida em redes sociais e mensageiros, de um lado, e sites, portais e busca, de outro. A pergunta pede uma única fonte, aquela pela qual o entrevistado mais se informa, e por isso não mede a exposição a cada meio.
-
-Para garantir a replicabilidade da análise, todos os scripts em R, bancos de dados e demais arquivos utilizados para o desenvolvimento deste texto estão disponíveis [neste repositório](`r url_repositorio`) no GitHub.
+Antes de passarmos à análise dos dados propriamente dita, cabem algumas ponderações metodológicas. De saída, foi realizada uma análise preliminar do perfil amostral para verificar se as distribuições marginais das variáveis demográficas se assemelhavam ao perfil da população do estado. Alguns ajustes foram necessários e, portanto, os pesos amostrais foram calibrados a partir dos dados do Censo de 2022. Mais especificamente, a amostra foi calibrada por _raking_ às distribuições de nível de instrução, sexo e faixa etária dentro de cada região geográfica -- neste caso, dividindo entre a capital, a região metropolitana e os demais municípios do estado --, além da distribuição de cor/raça. A região metropolitana segue a composição definida pela Lei Complementar estadual nº 184/2018, que inclui Petrópolis. O perfil da amostra, antes e depois da ponderação, está indicado na @tbl-perfil-amostral.
 
 ```{r}
 #| label: tbl-perfil-amostral
@@ -154,9 +141,17 @@ kbl(select(t1, rotulo, n, pct_amostra, pct_censo, pct_ponderada), format = "late
   fonte_tabela(paste(nota_fonte_tabela, "Censo Demográfico 2022 (IBGE, tabela 10061). A renda familiar não foi usada na calibração dos pesos e não tem distribuição comparável na tabela do Censo."))
 ```
 
-# Frequência e fontes de informação {#sec-frequencia}
+Além disso, respondentes com menos de 18 anos foram removidos da amostra, o que correspondia a `r fmt_pct(100 * n_etapa("Menos de 18") / n_etapa("bruto"), 1)` das observações. Trata-se de uma decisão arbitrária, mas necessária para possibilitar a calibração por faixa etária, já que a tabela do Censo utilizada cobre apenas a população com 18 anos ou mais. Também foram excluídos os `r n_etapa("cor")` respondentes que não informaram cor ou raça, o que resulta em `r fmt_int(n_etapa("analisada"))` entrevistas analisadas. Vale reforçar, portanto, que as análises podem ser generalizadas apenas para a população com pelo menos 18 anos de idade.
 
-De saída, vamos analisar as distribuições marginais das principais variáveis relacionadas ao acesso à informação. Em torno de `r pr("freq4", "Todo dia")` da população fluminense diz se informar sobre política todos os dias (@fig-frequencia). Mais que o dobro (em torno de `r rara_nunca`), no entanto, se informa sobre política com baixíssima frequência -- "raramente" ou "nunca".
+As estimativas levam em conta o agrupamento das entrevistas por setor censitário e a calibração dos pesos. Os intervalos de confiança de 95% apresentados nos gráficos das distribuições marginais (Gráficos [-@fig-frequencia] a [-@fig-redes]) são calculados em escala logit e, como a amostra foi selecionada por cotas, devem ser lidos como aproximações. As preferências eleitorais, por sua vez, são medidas pelo voto declarado nas eleições de 2022, o que exige cautela: entre os entrevistados que declararam voto em Lula ou em Bolsonaro no 2º turno, `r tse("2º turno de 2022: Lula", "survey")` escolheram Lula, enquanto o resultado oficial no estado foi de `r tse("2º turno de 2022: Lula")`, segundo o Tribunal Superior Eleitoral (TSE).
+
+Para tornar os cruzamentos mais estáveis, algumas variáveis foram agregadas. A frequência com que o entrevistado se informa sobre política foi reduzida a quatro categorias: todo dia, toda semana, mensal ou raramente e nunca. A fonte pela qual mais se informa foi agrupada em (i) TV; (ii) redes sociais e aplicativos de mensagem; (iii) sites, portais e busca no Google; (iv) outras fontes, como rádio, jornais e conversas; e (v) não se informa, que reúne quem respondeu "nenhum destes", "não me informo sobre política" ou não soube responder. Na @sec-publicos, os grupos (ii) e (iii) são somados sob o rótulo de internet.
+
+Para garantir a replicabilidade da análise, todos os scripts em R, bancos de dados e demais arquivos utilizados para o desenvolvimento deste texto estão disponíveis [neste repositório](`r url_repositorio`) no GitHub.
+
+# Análise dos dados {#sec-analise}
+
+De saída, vamos analisar as distribuições marginais das principais variáveis relacionadas ao acesso à informação (Gráficos [-@fig-frequencia] e [-@fig-fontes]).
 
 ```{r}
 #| label: fig-frequencia
@@ -165,8 +160,6 @@ De saída, vamos analisar as distribuições marginais das principais variáveis
 figura("grafico1_frequencia")
 ```
 
-Em geral, a maneira mais comum de acessar informação é através do noticiário da TV, principal fonte para `r pr("inf1", "NOTICIÁRIO DA TV")` da população, mas redes sociais como Facebook, Instagram e Twitter (atual X) também são meios de informação frequentes (`r pr("inf1", "REDES SOCIAIS COMO FACEBOOK, INSTAGRAM OU TWITTER")`), como mostra o @fig-fontes. Uma parcela muito pequena da população tem como principal fonte os jornais impressos e revistas (`r pr("inf1", "JORNAIS IMPRESSOS E REVISTAS")`), além de aplicativos de mensagem como o WhatsApp e o Telegram (`r pr("inf1", "WHATSAPP OU TELEGRAM")`).
-
 ```{r}
 #| label: fig-fontes
 #| fig-cap: "Fonte pela qual mais se informa sobre política (%)"
@@ -174,7 +167,9 @@ Em geral, a maneira mais comum de acessar informação é através do noticiári
 figura("grafico2_fontes")
 ```
 
-De fato, quando perguntados sobre qual rede social mais utilizam para se informar sobre política, `r pr("redes_rec", "Não usa redes sociais")` dos fluminenses respondem que não usam redes sociais -- trata-se, aliás, da resposta mais frequente (@fig-redes). Mesmo assim, algumas redes se destacam, como o Facebook (`r pr("redes_rec", "Facebook")`) e o Instagram (`r pr("redes_rec", "Instagram")`). O WhatsApp é a principal rede para aproximadamente `r pr("redes_rec", "WhatsApp ou Telegram")` da população do estado do Rio. O percentual é bem maior do que o de pessoas que têm o WhatsApp como principal fonte de informação política (`r pr("inf1", "WHATSAPP OU TELEGRAM")`), porque as duas perguntas medem coisas diferentes. A pergunta sobre a fonte principal compara o WhatsApp com todas as outras fontes, inclusive a TV, enquanto a pergunta sobre redes sociais o compara apenas com as demais redes.
+Em torno de `r pr("freq4", "Todo dia")` da população fluminense diz se informar sobre política todos os dias. Mais que o dobro (em torno de `r rara_nunca`), no entanto, se informa sobre política com baixíssima frequência -- "raramente" ou "nunca". Em geral, a maneira mais comum de acessar informação é através do noticiário da TV (`r pr("inf1", "NOTICIÁRIO DA TV")`), mas redes sociais como Facebook, Instagram e Twitter (atual X) também são meios de informação frequentes (`r pr("inf1", "REDES SOCIAIS COMO FACEBOOK, INSTAGRAM OU TWITTER")`). Uma parcela muito pequena da população tem como principal fonte os jornais impressos e revistas (`r pr("inf1", "JORNAIS IMPRESSOS E REVISTAS")`), além de aplicativos de mensagem como o WhatsApp e o Telegram (`r pr("inf1", "WHATSAPP OU TELEGRAM")`).
+
+De fato, quando perguntados sobre o acesso à informação através de redes sociais, `r pr("redes_rec", "Não usa redes sociais")` da população fluminense diz não se informar sobre política através de redes sociais -- trata-se, aliás, da resposta mais frequente (@fig-redes). Mesmo assim, algumas redes se destacam, como o Facebook (`r pr("redes_rec", "Facebook")`) e o Instagram (`r pr("redes_rec", "Instagram")`). O WhatsApp é a rede social mais utilizada para acesso a informações sobre política por aproximadamente `r pr("redes_rec", "WhatsApp ou Telegram")` da população do estado do Rio.
 
 ```{r}
 #| label: fig-redes
@@ -183,48 +178,30 @@ De fato, quando perguntados sobre qual rede social mais utilizam para se informa
 figura("grafico3_redes")
 ```
 
-Quando as fontes digitais são somadas, a distância para a TV diminui. A internet é a principal fonte de informação política para `r pr("fonte4", "Internet")` da população, patamar próximo ao da TV (`r pr("fonte4", "TV")`), com uma diferença de `r dif("tv_menos_internet")` em favor da TV. Entre os que se informam sobre política ao menos raramente, isto é, excluindo quem diz nunca se informar, as duas fontes praticamente empatam (`r pr("fonte4", "TV", recorte = "sem_nunca")` para a TV e `r pr("fonte4", "Internet", recorte = "sem_nunca")` para a internet).
+## Acesso à informação e regiões do estado {#sec-regioes}
 
-A escolha da fonte varia bastante com a idade e a escolaridade. Entre os jovens de 18 a 24 anos, `r pr("fonte4", "Internet", "idadef", "18 - 24 ANOS")` se informam principalmente pela internet e `r pr("fonte4", "TV", "idadef", "18 - 24 ANOS")`, pela TV. Entre as pessoas com 60 anos ou mais, a relação se inverte, com `r pr("fonte4", "TV", "idadef", "60 ANOS OU MAIS")` tendo a TV como principal fonte e `r pr("fonte4", "Internet", "idadef", "60 ANOS OU MAIS")`, a internet. O mesmo ocorre com a escolaridade. A internet é a fonte principal de `r pr("fonte4", "Internet", "esc_faixa", "Superior completo")` das pessoas com ensino superior completo, contra `r pr("fonte4", "Internet", "esc_faixa", "Sem instrução e fundamental incompleto")` entre as que não completaram o ensino fundamental. Trata-se de um padrão compatível com uma substituição geracional das fontes de informação, mas dados coletados em um único momento não permitem separar o efeito da idade do efeito da geração a que cada pessoa pertence.
+As distribuições marginais elucidam algumas questões interessantes a respeito da população fluminense. Em particular, embora uma parcela considerável afirme se informar sobre política com alta frequência, uma parcela ainda mais expressiva diz se informar sobre o assunto de forma bastante infrequente. O noticiário de TV é o meio de comunicação mais utilizado, mas redes sociais têm um espaço de destaque que não deve ser ignorado. Vejamos, agora, a distribuição dessas variáveis de acordo com alguns recortes demográficos e eleitorais.
 
-## Acesso à informação, região e sexo
-
-As distribuições marginais elucidam algumas questões interessantes a respeito da população fluminense. Vejamos, agora, a distribuição dessas variáveis de acordo com alguns recortes demográficos, começando pelas regiões do estado.
-
-No que diz respeito à frequência com que se informam sobre política, a principal diferença entre as regiões aparece na categoria "nunca". Enquanto `r pr("freq4", "Nunca", "area3", "RIO CAPITAL")` dos moradores da capital nunca se informam sobre política, essa proporção é de `r pr("freq4", "Nunca", "area3", "RM (EXCETO CAPITAL)")` na região metropolitana e de `r pr("freq4", "Nunca", "area3", "DEMAIS MUNICÍPIOS")` nos demais municípios. Não há, contudo, diferença clara na proporção dos que se informam todos os dias. À primeira vista, trata-se de um indicativo de que a população carioca se informa sobre política com um pouco mais de frequência do que a do restante do estado.
-
-A diferença, no entanto, parece refletir sobretudo a composição educacional das regiões. A capital concentra mais pessoas com ensino superior completo (`r pr("esc_faixa", "Superior completo", "area3", "RIO CAPITAL")` da população adulta, contra `r pr("esc_faixa", "Superior completo", "area3", "RM (EXCETO CAPITAL)")` na região metropolitana e `r pr("esc_faixa", "Superior completo", "area3", "DEMAIS MUNICÍPIOS")` nos demais municípios), e a proporção dos que nunca se informam cai de `r pr("freq4", "Nunca", "esc2", "Até médio incompleto")` entre quem não completou o ensino médio para `r pr("freq4", "Nunca", "esc2", "Médio completo ou mais")` entre quem o completou. Quando comparamos pessoas com o mesmo nível de escolaridade, as diferenças entre as regiões ficam menores e deixam de se distinguir da margem de erro (@tbl-nunca). Hipóteses como uma maior oferta de meios de comunicação ou um ambiente político mais ativo na capital não podem ser testadas com estes dados.
-
-Quanto às fontes de informação, não há diferenças claras entre as regiões. Em todas elas, a TV e a internet são os dois principais grupos de fonte, e a proporção que se informa principalmente pela internet varia pouco (`r pr("fonte4", "Internet", "area3", "RIO CAPITAL")` na capital, `r pr("fonte4", "Internet", "area3", "RM (EXCETO CAPITAL)")` na região metropolitana e `r pr("fonte4", "Internet", "area3", "DEMAIS MUNICÍPIOS")` nos demais municípios).
-
-Há também uma diferença clara entre homens e mulheres. Entre as mulheres, `r pr("freq4", "Nunca", "sexo", "FEMININO")` dizem nunca se informar sobre política, contra `r pr("freq4", "Nunca", "sexo", "MASCULINO")` dos homens, uma diferença de `r dif("nunca_mulheres_homens")`. A diferença persiste entre as pessoas com pelo menos o ensino médio completo (`r pr("freq4", "Nunca", "sexo", "FEMININO", recorte = "esc_medio_ou_mais")` das mulheres e `r pr("freq4", "Nunca", "sexo", "MASCULINO", recorte = "esc_medio_ou_mais")` dos homens), o que indica que ela não decorre apenas de diferenças de escolaridade. As fontes de informação, por outro lado, são parecidas entre homens e mulheres.
+Um ponto de atenção é que o tamanho limitado da amostra nos leva a margens de erro maiores, sobretudo quando consideramos as subamostras (por exemplo, quando dividimos a amostra em regiões geográficas). Considerando essas limitações, focaremos em analisar as estimativas pontuais, indicando os casos onde há maior incerteza sobre o resultado. Estimativas baseadas em menos de 30 entrevistas ou com coeficiente de variação acima de 30% não são interpretadas.
 
 ```{r}
-#| label: tbl-nunca
-#| tbl-cap: "Proporção que nunca se informa sobre política, por região e sexo, no total e por escolaridade (%)"
+#| label: fig-regiao
+#| fig-cap: "Frequência com que se informa e fonte principal de informação sobre política, por região (%)"
 
-t2 <- ler_estimativa("tabela2_nunca_regiao_sexo") %>%
-  mutate(valor = fmt_num(pct, 1), bloco = ifelse(por == "area3", "Região", "Sexo")) %>%
-  select(bloco, rotulo, recorte, valor) %>%
-  tidyr::pivot_wider(names_from = recorte, values_from = valor)
-grupos_t2 <- rle(t2$bloco)
-kbl(select(t2, rotulo, total, esc_ate_medio_incompleto, esc_medio_ou_mais), format = "latex", booktabs = TRUE,
-    col.names = c("", "Total", "Até médio incompleto", "Médio completo ou mais"), align = "lrrr", linesep = "") %>%
-  kable_styling(font_size = 9, position = "center") %>%
-  add_header_above(c(" " = 2, "Escolaridade" = 2)) %>%
-  pack_rows(index = setNames(grupos_t2$lengths, grupos_t2$values)) %>%
-  fonte_tabela(paste(nota_fonte_tabela, "Estimativas ponderadas. As diferenças entre regiões dentro de cada nível de escolaridade não se distinguem da margem de erro (Anexo A)."))
+figura("grafico4_regiao")
 ```
 
-# Dois públicos: TV e internet {#sec-publicos}
+No que diz respeito à frequência com que se informam sobre política, a população da capital parece acessar informações com mais frequência (@fig-regiao). A diferença mais sistemática pode ser observada na categoria "nunca": enquanto aproximadamente `r pr("freq4", "Nunca", "area3", "RIO CAPITAL")` dos moradores da capital nunca se informam sobre política, essa proporção na região metropolitana e nos demais municípios está mais próxima dos 30% (`r pr("freq4", "Nunca", "area3", "RM (EXCETO CAPITAL)")` e `r pr("freq4", "Nunca", "area3", "DEMAIS MUNICÍPIOS")`, respectivamente). Trata-se de um indicativo de que a população carioca é um pouco mais informada sobre política em comparação à população do estado.
 
-Os dois grupos de fonte mais numerosos, TV e internet, reúnem `r pr("fonte4", "TV")` e `r pr("fonte4", "Internet")` da população (`r sum(banco$fonte4 == "TV")` e `r sum(banco$fonte4 == "Internet")` entrevistados, respectivamente). A @tbl-perfil-publicos compara o perfil de cada um.
+A despeito disso, parece não haver diferenças sistemáticas no que diz respeito às fontes de informação. Em geral, noticiários de TV são a fonte mais utilizada para se informar sobre política. Cariocas parecem preferir esse meio de comunicação com intensidade um pouco menor (`r pr("fonte5", "TV", "area3", "RIO CAPITAL")` na capital, contra `r pr("fonte5", "TV", "area3", "RM (EXCETO CAPITAL)")` na região metropolitana e `r pr("fonte5", "TV", "area3", "DEMAIS MUNICÍPIOS")` nos demais municípios), mas essa diferença está dentro da margem de erro.
 
-As diferenças mais nítidas são de idade e escolaridade, e se estendem à renda. As pessoas com 60 anos ou mais são `r pr("idadef", "60 ANOS OU MAIS", "fonte4", "TV")` do público da TV e `r pr("idadef", "60 ANOS OU MAIS", "fonte4", "Internet")` do público da internet. No sentido oposto, os jovens de 18 a 34 anos são `r jovens("Internet")` do público da internet, contra `r jovens("TV")` do público da TV. Quem não completou o ensino fundamental representa `r pr("esc_faixa", "Sem instrução e fundamental incompleto", "fonte4", "TV")` dos que se informam pela TV e apenas `r pr("esc_faixa", "Sem instrução e fundamental incompleto", "fonte4", "Internet")` dos que se informam pela internet, grupo em que `r pr("esc_faixa", "Superior completo", "fonte4", "Internet")` têm ensino superior completo. A renda segue a mesma direção. Vivem com até dois salários mínimos `r pr("renda_grp", "Até 2 salários mínimos", "fonte4", "TV")` do público da TV, contra `r pr("renda_grp", "Até 2 salários mínimos", "fonte4", "Internet")` do público da internet. Os dois públicos, por outro lado, não se distinguem por sexo, cor ou raça, nem pela região do estado em que vivem, considerando a margem de erro.
+## Dois públicos: TV e internet {#sec-publicos}
 
-A proporção que se informa sobre política todos os dias é praticamente a mesma nos dois públicos (`r pr("freq4", "Todo dia", "fonte4", "TV")` na TV e `r pr("freq4", "Todo dia", "fonte4", "Internet")` na internet). A diferença está na outra ponta, já que `r pr("freq4", "Nunca", "fonte4", "TV")` do público da TV dizem nunca se informar sobre política, contra `r pr("freq4", "Nunca", "fonte4", "Internet")` do público da internet. Isso sugere que parte de quem aponta a TV como principal fonte tem um contato mais incidental com a política. De todo modo, as fronteiras entre os dois públicos não são rígidas. Entre os que se informam principalmente pela TV, `r pr("usa_rede_politica", "Sim", "fonte4", "TV")` também citam uma rede social que usam para se informar sobre política.
+Quando as fontes digitais são somadas, a distância para a TV diminui. A internet, que reúne redes sociais, aplicativos de mensagem, sites, portais e buscas, é a principal fonte de informação política para `r pr("fonte4", "Internet")` da população, contra `r pr("fonte4", "TV")` da TV. Entre os que se informam sobre política ao menos raramente, isto é, excluindo quem diz nunca se informar, as duas fontes praticamente empatam (`r pr("fonte4", "TV", recorte = "sem_nunca")` para a TV e `r pr("fonte4", "Internet", recorte = "sem_nunca")` para a internet).
 
-Do ponto de vista político, as diferenças existem, mas são menores do que as sociodemográficas. O público da internet reúne mais eleitores declarados de Bolsonaro (`r pr("voto2t_3", "Bolsonaro", "fonte4", "Internet")`, contra `r pr("voto2t_3", "Bolsonaro", "fonte4", "TV")` no público da TV) e mais simpatizantes do PL (`r pr("part_pref_grp", "PL", "fonte4", "Internet")`, contra `r pr("part_pref_grp", "PL", "fonte4", "TV")`). Ao mesmo tempo, identifica-se mais tanto com a esquerda quanto com a direita, enquanto no público da TV é maior a proporção de quem não se identifica com nenhuma ideologia (`r pr("ideologia_grp", "Nenhuma", "fonte4", "TV")`, contra `r pr("ideologia_grp", "Nenhuma", "fonte4", "Internet")`). Esses resultados se mantêm quando excluímos da comparação quem nunca se informa sobre política.
+A escolha da fonte varia bastante com a idade e a escolaridade. Entre os jovens de 18 a 24 anos, `r pr("fonte4", "Internet", "idadef", "18 - 24 ANOS")` se informam principalmente pela internet e `r pr("fonte4", "TV", "idadef", "18 - 24 ANOS")`, pela TV. Entre as pessoas com 60 anos ou mais, a relação se inverte, com `r pr("fonte4", "TV", "idadef", "60 ANOS OU MAIS")` tendo a TV como principal fonte e `r pr("fonte4", "Internet", "idadef", "60 ANOS OU MAIS")`, a internet. O mesmo ocorre com a escolaridade. A internet é a fonte principal de `r pr("fonte4", "Internet", "esc_faixa", "Superior completo")` das pessoas com ensino superior completo, contra `r pr("fonte4", "Internet", "esc_faixa", "Sem instrução e fundamental incompleto")` entre as que não completaram o ensino fundamental. Trata-se de um padrão compatível com uma substituição geracional das fontes de informação.
+
+A @tbl-perfil-publicos compara o perfil de quem se informa principalmente pela TV e de quem se informa principalmente pela internet (`r sum(banco$fonte4 == "TV")` e `r sum(banco$fonte4 == "Internet")` entrevistados, respectivamente). As diferenças mais nítidas são de idade e escolaridade, e se estendem à renda. As pessoas com 60 anos ou mais são `r pr("idadef", "60 ANOS OU MAIS", "fonte4", "TV")` do público da TV e `r pr("idadef", "60 ANOS OU MAIS", "fonte4", "Internet")` do público da internet. No sentido oposto, os jovens de 18 a 34 anos são `r jovens("Internet")` do público da internet, contra `r jovens("TV")` do público da TV. Quem não completou o ensino fundamental representa `r pr("esc_faixa", "Sem instrução e fundamental incompleto", "fonte4", "TV")` dos que se informam pela TV e apenas `r pr("esc_faixa", "Sem instrução e fundamental incompleto", "fonte4", "Internet")` dos que se informam pela internet, grupo em que `r pr("esc_faixa", "Superior completo", "fonte4", "Internet")` têm ensino superior completo. A renda segue a mesma direção. Vivem com até dois salários mínimos `r pr("renda_grp", "Até 2 salários mínimos", "fonte4", "TV")` do público da TV, contra `r pr("renda_grp", "Até 2 salários mínimos", "fonte4", "Internet")` do público da internet. Os dois públicos, por outro lado, não se distinguem por sexo, cor ou raça, nem pela região do estado em que vivem, considerando a margem de erro.
 
 ```{r}
 #| label: tbl-perfil-publicos
@@ -237,249 +214,125 @@ cabecalhos <- c(sexo = "Sexo", idadef = "Faixa etária", esc_faixa = "Escolarida
                 usa_rede_politica = "Rede social mais usada para se informar sobre política",
                 ideologia_grp = "Posição ideológica", part_pref_grp = "Partido preferido",
                 voto2t_3 = "Voto declarado no 2º turno de 2022")
-t3 <- ler_estimativa("tabela3_perfil_tv_internet") %>%
+t2 <- ler_estimativa("tabela2_perfil_tv_internet") %>%
   filter(!(variavel == "cor" & categoria == "OUTRA"), !(variavel == "usa_rede_politica" & categoria == "Não")) %>%
   mutate(
     bloco = unname(cabecalhos[variavel]),
     rotulo = ifelse(variavel == "usa_rede_politica", "Cita alguma rede social", rotulo),
-    across(c(pct_total, pct_TV, pct_Internet, dif_pp), \(x) fmt_num(x, 1)),
-    ic = paste(fmt_num(dif_ic_inf, 1), "a", fmt_num(dif_ic_sup, 1))
+    across(c(pct_total, pct_TV, pct_Internet), \(x) fmt_num(x, 1))
   )
-grupos_t3 <- rle(t3$bloco)
+grupos_t2 <- rle(t2$bloco)
 n_tv <- fmt_int(sum(banco$fonte4 == "TV"))
 n_int <- fmt_int(sum(banco$fonte4 == "Internet"))
-kbl(select(t3, rotulo, pct_total, pct_TV, pct_Internet, dif_pp, ic), format = "latex", booktabs = TRUE,
-    col.names = c("", "População", paste0("TV (n = ", n_tv, ")"), paste0("Internet (n = ", n_int, ")"),
-                  "Diferença (p.p.)", "IC 95%"),
-    align = "lrrrrr", linesep = "") %>%
+kbl(select(t2, rotulo, pct_total, pct_TV, pct_Internet), format = "latex", booktabs = TRUE,
+    col.names = c("", "População", paste0("TV (n = ", n_tv, ")"), paste0("Internet (n = ", n_int, ")")),
+    align = "lrrr", linesep = "") %>%
   kable_styling(font_size = 8, position = "center") %>%
-  pack_rows(index = setNames(grupos_t3$lengths, grupos_t3$values)) %>%
-  fonte_tabela(paste(nota_fonte_tabela, paste0("Estimativas ponderadas. Diferença = internet − TV, em pontos percentuais. Voto declarado calculado entre quem informou o voto. A categoria de cor amarela ou indígena (", fmt_pct(prv("cor", "OUTRA"), 1), " da população) não é exibida.")))
+  pack_rows(index = setNames(grupos_t2$lengths, grupos_t2$values)) %>%
+  fonte_tabela(paste(nota_fonte_tabela, paste0("Estimativas ponderadas. Voto declarado calculado entre quem informou o voto. A categoria de cor amarela ou indígena (", fmt_pct(prv("cor", "OUTRA"), 1), " da população) não é exibida.")))
 ```
 
-# Informação e política {#sec-politica}
+A proporção que se informa sobre política todos os dias é praticamente a mesma nos dois públicos (`r pr("freq4", "Todo dia", "fonte4", "TV")` na TV e `r pr("freq4", "Todo dia", "fonte4", "Internet")` na internet). A diferença está na outra ponta, já que `r pr("freq4", "Nunca", "fonte4", "TV")` do público da TV dizem nunca se informar sobre política, contra `r pr("freq4", "Nunca", "fonte4", "Internet")` do público da internet. Isso sugere que parte de quem aponta a TV como principal fonte tem um contato mais incidental com a política. De todo modo, as fronteiras entre os dois públicos não são rígidas. Entre os que se informam principalmente pela TV, `r pr("usa_rede_politica", "Sim", "fonte4", "TV")` também citam uma rede social que usam para se informar sobre política.
 
-## Acesso à informação e preferências eleitorais
+Do ponto de vista político, o público da internet reúne mais eleitores declarados de Bolsonaro (`r pr("voto2t_3", "Bolsonaro", "fonte4", "Internet")`, contra `r pr("voto2t_3", "Bolsonaro", "fonte4", "TV")` no público da TV) e mais simpatizantes do PL (`r pr("part_pref_grp", "PL", "fonte4", "Internet")`, contra `r pr("part_pref_grp", "PL", "fonte4", "TV")`). No público da TV, por sua vez, é maior a proporção de quem não se identifica com nenhuma ideologia (`r pr("ideologia_grp", "Nenhuma", "fonte4", "TV")`, contra `r pr("ideologia_grp", "Nenhuma", "fonte4", "Internet")`). Esses resultados se mantêm quando excluímos da comparação quem nunca se informa sobre política.
+
+## Acesso à informação e preferências eleitorais {#sec-eleitoral}
 
 Quando analisamos as variáveis de interesse por preferências eleitorais -- em especial, a partir da declaração de voto nas eleições presidenciais de 2022 --, observamos alguns resultados interessantes (@fig-frequencia-voto).
-
-Observe que há uma relação clara entre não ter escolhido um candidato no 2º turno e a frequência com que as pessoas buscam se informar sobre política. De fato, `r pr("freq4", "Todo dia", "voto2t_3", "Lula")` dos eleitores de Lula e `r pr("freq4", "Todo dia", "voto2t_3", "Bolsonaro")` dos eleitores de Bolsonaro afirmam se informar sobre política em frequência diária. Entre os que votaram branco ou nulo ou não foram votar, no entanto, essa proporção é de `r pr("freq4", "Todo dia", "voto2t_3", "Branco, nulo ou não votou")`. Esse grupo, aliás, está concentrado nas frequências mais baixas, e `r pr("freq4", "Nunca", "voto2t_3", "Branco, nulo ou não votou")` dizem nunca se informar sobre política.
 
 ```{r}
 #| label: fig-frequencia-voto
 #| fig-cap: "Frequência com que se informa sobre política, por voto declarado em 2022 (%)"
 
-figura("grafico4_frequencia_voto")
+figura("grafico5_frequencia_voto")
 ```
 
-Os dados indicam, ainda, algumas diferenças entre a maneira como eleitores de Lula e de Bolsonaro acessam informações sobre política (@fig-fontes-voto). É verdade que o noticiário da TV é a fonte principal mais citada nos dois grupos; no entanto, ela é mais comum entre os eleitores de Lula -- enquanto `r pr("fonte5", "TV", "voto2t_3", "Lula")` dos eleitores de Lula têm a TV como principal fonte, `r pr("fonte5", "TV", "voto2t_3", "Bolsonaro")` dos eleitores de Bolsonaro fazem a mesma indicação, uma diferença de `r dif("tv_lula_bolsonaro")`.
+Observe que há uma relação sistemática entre não ir votar e a frequência com que buscam se informar sobre política. De fato, entre os eleitores de Lula e Bolsonaro, aproximadamente `r pr("freq4", "Todo dia", "voto2t_4", "Lula")` afirmam se informar sobre política em frequência diária; dentre os que declararam não ter ido votar, no entanto, essa proporção é de `r pr("freq4", "Todo dia", "voto2t_4", "Não foi votar")`. A população que não foi votar, aliás, está concentrada nas frequências "mensal ou raramente" e "nunca", que somam `r soma("freq4", baixa, "voto2t_4", "Não foi votar")` desse grupo.
 
-A contrapartida é que uma proporção bem maior dos eleitores de Bolsonaro tem as redes sociais e os aplicativos de mensagem como principal fonte (`r pr("fonte5", "Redes sociais e mensageiros", "voto2t_3", "Bolsonaro")`, contra `r pr("fonte5", "Redes sociais e mensageiros", "voto2t_3", "Lula")` entre os eleitores de Lula). Já a proporção que se informa principalmente por sites, portais e buscas é praticamente a mesma nos dois grupos (`r pr("fonte5", "Sites, portais e busca", "voto2t_3", "Lula")` e `r pr("fonte5", "Sites, portais e busca", "voto2t_3", "Bolsonaro")`). O mesmo padrão aparece em medidas políticas que não dependem da lembrança do voto. Entre os simpatizantes do PL, `r pr("fonte5", "Redes sociais e mensageiros", "part_pref_grp", "PL")` se informam principalmente por redes sociais e mensageiros e `r pr("fonte5", "TV", "part_pref_grp", "PL")`, pela TV, enquanto entre os simpatizantes do PT essas proporções são de `r pr("fonte5", "Redes sociais e mensageiros", "part_pref_grp", "PT")` e `r pr("fonte5", "TV", "part_pref_grp", "PT")`. Quem se identifica com a esquerda, por sua vez, recorre mais a sites, portais e buscas do que quem se identifica com a direita (`r pr("fonte5", "Sites, portais e busca", "ideologia_grp", "Esquerda")`, contra `r pr("fonte5", "Sites, portais e busca", "ideologia_grp", "Direita")`).
+Os dados indicam, ainda, algumas diferenças entre a maneira como eleitores de Lula e Bolsonaro acessam informações sobre política (@fig-fontes-voto). É verdade que os dois grupos de eleitores utilizam o noticiário de TV como fonte principal de informação sobre política; no entanto, essa preferência é mais prevalente entre os eleitores de Lula -- enquanto `r pr("fonte5", "TV", "voto2t_4", "Lula")` dos eleitores de Lula preferem esse meio de comunicação, `r pr("fonte5", "TV", "voto2t_4", "Bolsonaro")` dos eleitores de Bolsonaro indicam a mesma preferência.
 
 ```{r}
 #| label: fig-fontes-voto
 #| fig-cap: "Fonte principal de informação sobre política, por voto declarado em 2022 (%)"
 
-figura("grafico5_fontes_voto")
+figura("grafico6_fontes_voto")
 ```
 
-O padrão observado na eleição estadual, no entanto, é um pouco diferente. Nesse caso, há duas diferenças claras entre os eleitores de Cláudio Castro e os de Marcelo Freixo (que, somados, correspondem a `r cobertura_gov` da amostra). A primeira diz respeito à frequência com que se informam. Note que `r pr("freq4", "Nunca", "gov_2", "Castro")` dos eleitores de Castro afirmam nunca se informar sobre política, enquanto apenas `r pr("freq4", "Nunca", "gov_2", "Freixo")` dos eleitores de Freixo fazem a mesma declaração.
+A contrapartida é que eleitores de Bolsonaro se informam por redes sociais e aplicativos de mensagem com mais frequência (`r pr("fonte5", "Redes sociais e mensageiros", "voto2t_4", "Bolsonaro")`) do que os eleitores de Lula (`r pr("fonte5", "Redes sociais e mensageiros", "voto2t_4", "Lula")`).
 
-A segunda diferença diz respeito às fontes. Observe que `r pr("fonte5", "Sites, portais e busca", "gov_2", "Freixo")` dos eleitores de Freixo afirmam se informar principalmente por sites, portais e buscas, contra `r pr("fonte5", "Sites, portais e busca", "gov_2", "Castro")` dos eleitores de Castro -- um percentual notadamente alto, se considerarmos que se trata de um meio mais utilizado por pessoas mais escolarizadas. O resultado é compatível com o perfil do eleitor de Freixo, entre os quais `r pr("esc_faixa", "Superior completo", "gov_2", "Freixo")` têm ensino superior completo, contra `r pr("esc_faixa", "Superior completo", "gov_2", "Castro")` entre os eleitores de Castro. Os eleitores de Castro, por sua vez, se informam mais pela TV (`r pr("fonte5", "TV", "gov_2", "Castro")`, contra `r pr("fonte5", "TV", "gov_2", "Freixo")`), e as redes sociais e os mensageiros têm peso semelhante nos dois grupos. As diferenças de fonte entre os eleitores de Castro e de Freixo, portanto, não repetem as que separam os eleitores de Lula e de Bolsonaro.
+O padrão observado nas eleições estaduais, no entanto, é um pouco diferente. Nesse caso, há duas diferenças mais ou menos claras entre os eleitores de Cláudio Castro e Marcelo Freixo -- os eleitores do primeiro declaram se informar sobre política com menos frequência do que os eleitores do segundo. Note, por exemplo, que `r pr("freq4", "Nunca", "gov_2", "Castro")` dos eleitores de Castro afirmam nunca se informar sobre política, enquanto apenas `r pr("freq4", "Nunca", "gov_2", "Freixo")` dos eleitores de Freixo fazem a mesma declaração.
 
-## Acesso à informação e avaliação de governo
+Observe, ainda, que `r pr("fonte5", "Sites, portais e busca", "gov_2", "Freixo")` dos eleitores de Freixo afirmam se informar principalmente por sites, portais e buscas -- um percentual notadamente alto, se considerarmos que se trata de um meio de comunicação mais utilizado por um grupo populacional mais instruído. Trata-se de um reflexo do próprio perfil do eleitor de Freixo.
+
+## Acesso à informação e avaliação de governo {#sec-avaliacao}
 
 Nesta seção, analisamos a relação entre a frequência e as formas de acesso à informação e a avaliação dos governos federal e estadual.
-
-Entre os que avaliam o governo Lula, quem o considera regular é o grupo que menos se informa sobre política diariamente (@fig-frequencia-avaliacao). São `r pr("freq4", "Todo dia", "aval_lula3", "Regular")` nesse grupo, contra `r pr("freq4", "Todo dia", "aval_lula3", "Ótimo ou bom")` entre os que avaliam o governo como ótimo ou bom e `r pr("freq4", "Todo dia", "aval_lula3", "Ruim ou péssimo")` entre os que o avaliam como ruim ou péssimo. Avaliações mais intensas, positivas ou negativas, andam junto com mais atenção à política. No caso do governo Cláudio Castro, o padrão é outro. Entre os que o avaliam como ótimo ou bom, `r pr("freq4", "Nunca", "aval_gov3", "Ótimo ou bom")` dizem nunca se informar sobre política, contra `r pr("freq4", "Nunca", "aval_gov3", "Regular")` dos que o consideram regular.
 
 ```{r}
 #| label: fig-frequencia-avaliacao
 #| fig-cap: "Frequência com que se informa sobre política, por avaliação dos governos Lula e Cláudio Castro (%)"
 
-figura("grafico6_frequencia_avaliacao")
+figura("grafico7_frequencia_avaliacao")
 ```
 
-Outro detalhe curioso é que a aprovação de Lula era, pelo menos na ocasião da aplicação do _survey_, maior entre aqueles que tinham o noticiário da TV como principal fonte de informação (@fig-avaliacao-fonte). Entre eles, `r pr("aval_lula3", "Ótimo ou bom", "fonte5", "TV")` avaliavam o governo federal como ótimo ou bom, contra `r pr("aval_lula3", "Ótimo ou bom", "fonte5", "Redes sociais e mensageiros")` entre os que se informam principalmente por redes sociais e mensageiros. Estes, por sua vez, avaliam pior o governo, e `r pr("aval_lula3", "Ruim ou péssimo", "fonte5", "Redes sociais e mensageiros")` o consideram ruim ou péssimo, contra `r pr("aval_lula3", "Ruim ou péssimo", "fonte5", "TV")` entre os que se informam pela TV. De fato, esse resultado está associado ao que vimos a respeito do perfil dos eleitores de Lula e Bolsonaro -- os deste último, em geral, se informam em maior proporção por redes sociais. Quando comparamos apenas eleitores de um mesmo candidato, a diferença entre TV e redes deixa de se distinguir da margem de erro. Entre os eleitores de Lula, por exemplo, `r pr("aval_lula3", "Ótimo ou bom", "fonte5", "TV", recorte = "eleitores_lula")` dos que se informam pela TV avaliam o governo como ótimo ou bom, contra `r pr("aval_lula3", "Ótimo ou bom", "fonte5", "Redes sociais e mensageiros", recorte = "eleitores_lula")` dos que se informam por redes e mensageiros. Os dados, portanto, não permitem afirmar que a fonte de informação explique a avaliação do governo, e é igualmente plausível que as pessoas escolham fontes mais afinadas com suas preferências políticas. No caso do governo Cláudio Castro, as diferenças entre os grupos de fonte são menores. Os que não se informam declaram com mais frequência não saber avaliar o governo (`r pr("aval_gov3", "Não sabe ou não respondeu", "fonte5", "Não se informa")`, contra `r pr("aval_gov3", "Não sabe ou não respondeu", "fonte5", "TV")` entre os que se informam pela TV).
+Em geral, entre os que avaliam o governo Lula como ótimo ou bom, o percentual de pessoas que afirmam se informar todo dia (`r pr("freq4", "Todo dia", "aval_lula3", "Ótimo ou bom")`) e nunca (`r pr("freq4", "Nunca", "aval_lula3", "Ótimo ou bom")`) é aproximadamente o mesmo (@fig-frequencia-avaliacao). Quem avalia o governo como regular, por sua vez, declara se informar sobre política de maneira mais infrequente: `r soma("freq4", baixa, "aval_lula3", "Regular")` desse grupo dizem se informar mensalmente, raramente ou nunca. Entre as pessoas que avaliam o governo Cláudio Castro como ótimo ou bom, `r pr("freq4", "Nunca", "aval_gov3", "Ótimo ou bom")` nunca se informam sobre política, proporção semelhante à dos que se informam mensalmente ou raramente (`r pr("freq4", "Mensal ou raramente", "aval_gov3", "Ótimo ou bom")`) e acima da dos que se informam todo dia (`r pr("freq4", "Todo dia", "aval_gov3", "Ótimo ou bom")`).
+
+Outro detalhe curioso é que a aprovação de Lula era, pelo menos na ocasião da aplicação do _survey_, maior entre aqueles que tinham o noticiário da TV como principal fonte de informação (@fig-avaliacao-fonte). Entre eles, `r pr("aval_lula3", "Ótimo ou bom", "fonte5", "TV")` avaliavam o governo federal como ótimo ou bom. Por outro lado, aqueles que se informam principalmente por redes sociais e aplicativos de mensagem tendem a avaliar pior o governo federal: `r pr("aval_lula3", "Ótimo ou bom", "fonte5", "Redes sociais e mensageiros")` o avaliavam como ótimo ou bom e `r pr("aval_lula3", "Ruim ou péssimo", "fonte5", "Redes sociais e mensageiros")`, como ruim ou péssimo. De fato, esse resultado está correlacionado com o que vimos a respeito do perfil dos eleitores de Lula e Bolsonaro -- os deste último, em geral, se informam com mais frequência a partir de redes sociais, o que explica em parte a pior aprovação do governo nesse grupo.
 
 ```{r}
 #| label: fig-avaliacao-fonte
-#| fig-cap: "Avaliação dos governos Lula e Cláudio Castro, por fonte principal de informação sobre política (%)"
+#| fig-cap: "Avaliação do governo Lula, por fonte principal de informação sobre política (%)"
 
-figura("grafico7_avaliacao_fonte")
+figura("grafico8_avaliacao_fonte")
 ```
 
-## Informação e formação de opinião
+## Informação e formação de opinião {#sec-opiniao}
 
-Por fim, a frequência com que as pessoas se informam sobre política também se relaciona com a formação de opinião sobre ela (@tbl-opiniao). Entre os que nunca se informam, `r pr("aval_gov3", "Não sabe ou não respondeu", "freq4", "Nunca")` não sabem avaliar o governo Cláudio Castro, proporção `r dif("opiniao_ns_castro")` maior do que entre os que se informam todos os dias. Mais da metade dos que nunca se informam (`r sem_opiniao("ideologia_grp", c("Nenhuma", "Não sabe ou não respondeu"), "Nunca")`) não se identifica com nenhuma ideologia ou não sabe responder, proporção que cai para `r sem_opiniao("ideologia_grp", c("Nenhuma", "Não sabe ou não respondeu"), "Todo dia")` entre os que se informam diariamente. O mesmo vale para o partido preferido e para o voto. Entre os que nunca se informam, `r pr("voto2t_3", "Branco, nulo ou não votou", "freq4", "Nunca")` votaram branco ou nulo ou não foram votar no 2º turno de 2022, contra `r pr("voto2t_3", "Branco, nulo ou não votou", "freq4", "Todo dia")` dos que se informam todos os dias. A falta de opinião sobre o governo estadual também varia entre as regiões, de `r pr("aval_gov3", "Não sabe ou não respondeu", "area3", "RIO CAPITAL")` na capital a `r pr("aval_gov3", "Não sabe ou não respondeu", "area3", "RM (EXCETO CAPITAL)")` na região metropolitana e `r pr("aval_gov3", "Não sabe ou não respondeu", "area3", "DEMAIS MUNICÍPIOS")` nos demais municípios.
+A frequência com que as pessoas se informam sobre política também se relaciona com a formação de opinião sobre ela (@tbl-opiniao). Entre os que nunca se informam, `r pr("aval_gov3", "Não sabe ou não respondeu", "freq4", "Nunca")` não sabem avaliar o governo Cláudio Castro, contra `r pr("aval_gov3", "Não sabe ou não respondeu", "freq4", "Mensal ou raramente")` entre os que se informam mensalmente ou raramente e `r pr("aval_gov3", "Não sabe ou não respondeu", "freq4", "Toda semana")` entre os que se informam toda semana. Mais da metade dos que nunca se informam (`r sem_opiniao("ideologia_grp", c("Nenhuma", "Não sabe ou não respondeu"), "Nunca")`) não se identifica com nenhuma ideologia ou não sabe responder, proporção que cai para `r sem_opiniao("ideologia_grp", c("Nenhuma", "Não sabe ou não respondeu"), "Todo dia")` entre os que se informam diariamente. O mesmo vale para o partido preferido e para o voto. Entre os que nunca se informam, `r pr("voto2t_3", "Branco, nulo ou não votou", "freq4", "Nunca")` votaram branco ou nulo ou não foram votar no 2º turno de 2022, contra `r pr("voto2t_3", "Branco, nulo ou não votou", "freq4", "Todo dia")` dos que se informam todos os dias.
+
+```{=latex}
+\begingroup\setstretch{1}
+```
 
 ```{r}
 #| label: tbl-opiniao
+#| tbl-pos: "H"
 #| tbl-cap: "Indicadores de ausência de opinião política, por frequência com que se informa sobre política (%)"
 
 niveis_freq <- c("Todo dia", "Toda semana", "Mensal ou raramente", "Nunca")
-t4 <- ler_estimativa("tabela4_informacao_opiniao")
+t3 <- ler_estimativa("tabela3_informacao_opiniao")
 for (g in niveis_freq) {
-  t4[[g]] <- paste0(fmt_num(t4[[paste0("pct_", g)]], 1), ifelse(t4[[paste0("instavel_", g)]], "*", ""))
+  t3[[g]] <- paste0(fmt_num(t3[[paste0("pct_", g)]], 1), ifelse(t3[[paste0("instavel_", g)]], "*", ""))
 }
-t4 <- t4 %>% mutate(dif_pp = fmt_num(dif_pp, 1), ic = paste(fmt_num(ic_inf, 1), "a", fmt_num(ic_sup, 1)))
-kbl(select(t4, indicador, all_of(niveis_freq), dif_pp, ic), format = "latex",
-    booktabs = TRUE, col.names = c("", "Todo dia", "Toda semana", "Mensal ou raramente", "Nunca", "Diferença (p.p.)", "IC 95%"),
-    align = "lrrrrrr", linesep = "") %>%
+kbl(select(t3, indicador, all_of(niveis_freq)), format = "latex",
+    booktabs = TRUE, col.names = c("", niveis_freq), align = "lrrrr", linesep = "") %>%
   kable_styling(font_size = 8, position = "center") %>%
-  column_spec(1, width = "4.2cm") %>%
-  add_header_above(c(" " = 1, "Frequência com que se informa" = 4, "Nunca − todo dia" = 2)) %>%
+  column_spec(1, width = "5.5cm") %>%
+  add_header_above(c(" " = 1, "Frequência com que se informa" = 4)) %>%
   fonte_tabela(paste(nota_fonte_tabela, "Estimativas ponderadas. O voto no 2º turno é calculado entre quem informou o voto. * Estimativa instável (coeficiente de variação acima de 30%), não interpretada no texto."))
 ```
 
-# Considerações finais e limites {#sec-consideracoes}
-
-A pesquisa realizada pelo DOXA em parceria com a Quaest revela que o acesso à informação política entre os fluminenses é relativamente desigual. Embora cerca de `r pr("freq4", "Todo dia")` da população declare se informar sobre política diariamente, mais da metade afirma fazê-lo apenas "raramente" ou "nunca". A televisão continua sendo o meio de comunicação mais utilizado para esse fim, mas as fontes digitais, somadas, chegam a um patamar próximo e predominam entre os mais jovens e os mais escolarizados. Já os jornais impressos e revistas possuem relevância marginal como fonte principal.
-
-Quem se informa principalmente pela TV e quem se informa principalmente pela internet formam públicos distintos. O público da TV é mais velho e menos escolarizado, com renda menor, e nele é maior a proporção dos que nunca se informam sobre política. O público da internet é mais jovem e mais escolarizado e reúne, em maior proporção, eleitores de Bolsonaro e simpatizantes do PL, embora também se identifique mais com a esquerda.
-
-Do ponto de vista regional, a capital fluminense apresenta uma proporção menor de pessoas que nunca se informam sobre política (`r pr("freq4", "Nunca", "area3", "RIO CAPITAL")`, contra `r pr("freq4", "Nunca", "area3", "RM (EXCETO CAPITAL)")` na região metropolitana e `r pr("freq4", "Nunca", "area3", "DEMAIS MUNICÍPIOS")` nos demais municípios). Essa diferença, no entanto, parece refletir sobretudo a maior escolaridade da população da capital, já que, entre pessoas com o mesmo nível de escolaridade, as diferenças regionais deixam de se distinguir da margem de erro. As fontes de informação, por sua vez, não variam muito entre regiões. As mulheres, por fim, dizem nunca se informar sobre política com mais frequência do que os homens, mesmo quando comparamos pessoas com escolaridade semelhante.
-
-Quando a análise é segmentada por preferências eleitorais, surgem contrastes expressivos. Eleitores de Lula tendem a se informar mais pela TV, enquanto os de Bolsonaro recorrem mais às redes sociais e aos aplicativos de mensagem. Já aqueles que votaram branco ou nulo ou não foram votar no 2º turno se destacam por apresentarem os menores índices de engajamento informativo, com apenas `r pr("freq4", "Todo dia", "voto2t_3", "Branco, nulo ou não votou")` declarando se informar diariamente. A aprovação do governo federal era maior entre os que se informam pela TV e menor entre os que se informam por redes sociais, mas essa associação acompanha, em grande medida, o voto declarado e não permite afirmar que a fonte influencie a avaliação. Quem nunca se informa sobre política, por sua vez, declara com muito mais frequência não saber avaliar o governo estadual e não se identificar com ideologias ou partidos.
-
-Os dados são de um único momento, o que impede acompanhar mudanças ao longo do tempo e separar os efeitos de idade e de geração. A pergunta sobre fontes pede apenas a principal delas e se baseia no relato dos entrevistados, que não necessariamente corresponde ao consumo efetivo de informação. A amostra foi selecionada por cotas, o que torna os intervalos de confiança aproximados, e o voto em 2022 é declarado, com sinais de viés a favor de Lula no voto presidencial. Uma agenda de pesquisa possível envolve repetir essas perguntas em novas ondas do _survey_ e medir diretamente o conhecimento político dos entrevistados, o que permitiria distinguir quem se informa com frequência de quem está, de fato, bem informado.
-
-{{< pagebreak >}}
-
-# Anexo A -- Testes e diferenças citadas {.unnumbered}
-
-A @tbl-testes apresenta os testes de independência de Rao-Scott, que levam em conta o desenho amostral, para os cruzamentos discutidos no texto. A @tbl-diferencas apresenta as diferenças entre proporções citadas no texto, com intervalos de confiança de 95% e p-valores.
-
-```{=latex}
-\begingroup\setstretch{1}
-```
-
-```{r}
-#| label: tbl-testes
-#| tbl-pos: "H"
-#| tbl-cap: "Testes de independência de Rao-Scott para os cruzamentos discutidos no texto"
-
-rotulos_testes <- c(
-  freq4_area3 = "Frequência × região",
-  freq4_area3_esc_baixa = "Frequência × região (até médio incompleto)",
-  freq4_area3_esc_alta = "Frequência × região (médio completo ou mais)",
-  freq4_sexo = "Frequência × sexo",
-  freq4_esc2 = "Frequência × escolaridade (2 níveis)",
-  fonte4_area3 = "Grupo de fonte × região",
-  fonte4_sexo = "Grupo de fonte × sexo",
-  fonte4_idadef = "Grupo de fonte × faixa etária",
-  fonte4_esc_faixa = "Grupo de fonte × escolaridade",
-  freq4_voto2t_3 = "Frequência × voto declarado para presidente",
-  freq4_gov_2 = "Frequência × voto declarado para governador",
-  fonte5_voto2t_3 = "Fonte (5 grupos) × voto declarado para presidente",
-  fonte5_gov_2 = "Fonte (5 grupos) × voto declarado para governador",
-  fonte5_partido_pt_pl = "Fonte (5 grupos) × partido preferido (PT e PL)",
-  fonte5_ideologia_esq_dir = "Fonte (5 grupos) × ideologia (esquerda e direita)",
-  aval_lula3_fonte5 = "Avaliação do governo Lula × fonte (5 grupos)",
-  aval_gov3_fonte5 = "Avaliação do governo Castro × fonte (5 grupos)",
-  freq4_aval_lula3 = "Frequência × avaliação do governo Lula",
-  freq4_aval_gov3 = "Frequência × avaliação do governo Castro",
-  aval_gov3_area3 = "Avaliação do governo Castro × região",
-  ideologia_grp_freq4 = "Posição ideológica × frequência",
-  part_pref_grp_freq4 = "Partido preferido × frequência",
-  perfil_sexo = "TV × internet: sexo",
-  perfil_idadef = "TV × internet: faixa etária",
-  perfil_esc_faixa = "TV × internet: escolaridade",
-  perfil_cor = "TV × internet: cor ou raça",
-  perfil_renda_grp = "TV × internet: renda familiar",
-  perfil_area3 = "TV × internet: região",
-  perfil_freq4 = "TV × internet: frequência com que se informa",
-  perfil_redes_grp = "TV × internet: rede social mais usada",
-  perfil_usa_rede_politica = "TV × internet: cita alguma rede social",
-  perfil_ideologia_grp = "TV × internet: posição ideológica",
-  perfil_part_pref_grp = "TV × internet: partido preferido",
-  perfil_voto2t_3 = "TV × internet: voto declarado para presidente"
-)
-testes %>%
-  filter(id %in% names(rotulos_testes)) %>%
-  mutate(id = factor(id, levels = names(rotulos_testes))) %>%
-  arrange(id) %>%
-  transmute(cruzamento = unname(rotulos_testes[as.character(id)]), f = fmt_num(estatistica_f, 2),
-            gl = paste0(fmt_num(gl_num, 1), "; ", fmt_num(gl_den, 0)), p = fmt_p(p_valor), n = fmt_int(n)) %>%
-  kbl(format = "latex", booktabs = TRUE, col.names = c("Cruzamento", "F", "Graus de liberdade", "p-valor", "n"),
-      align = "lrrrr", linesep = "") %>%
-  kable_styling(font_size = 8, position = "center") %>%
-  fonte_tabela(paste(nota_fonte_tabela, "Teste de Rao-Scott com correção de segunda ordem (estatística F), considerando o conglomerado por setor censitário e a calibração dos pesos."))
-```
-
 ```{=latex}
 \endgroup
 ```
 
-```{=latex}
-\begingroup\setstretch{1}
-```
+## Avaliação de governo por região {#sec-avaliacao-regiao}
+
+Por fim, vejamos os dados de aprovação do governo por região (@fig-avaliacao-regiao). Há dois resultados mais ou menos claros. Em primeiro lugar, o governo Lula era, pelo menos no momento da coleta dos dados da pesquisa, melhor avaliado na capital (`r pr("aval_lula3", "Ótimo ou bom", "area3", "RIO CAPITAL")` o consideravam ótimo ou bom) e nos demais municípios (`r pr("aval_lula3", "Ótimo ou bom", "area3", "DEMAIS MUNICÍPIOS")`) e pior avaliado na região metropolitana (`r pr("aval_lula3", "Ótimo ou bom", "area3", "RM (EXCETO CAPITAL)")`), embora a diferença entre a região metropolitana e os demais municípios esteja no limite da margem de erro. O governo Cláudio Castro, por outro lado, seguia um padrão quase oposto: era pior avaliado na capital (`r pr("aval_gov3", "Ótimo ou bom", "area3", "RIO CAPITAL")`) do que na região metropolitana (`r pr("aval_gov3", "Ótimo ou bom", "area3", "RM (EXCETO CAPITAL)")`) e nos demais municípios (`r pr("aval_gov3", "Ótimo ou bom", "area3", "DEMAIS MUNICÍPIOS")`).
 
 ```{r}
-#| label: tbl-diferencas
-#| tbl-pos: "H"
-#| tbl-cap: "Diferenças entre proporções citadas no texto, em pontos percentuais"
+#| label: fig-avaliacao-regiao
+#| fig-cap: "Avaliação dos governos Lula e Cláudio Castro, por região (%)"
 
-D %>%
-  filter(!grepl("^perfil", id)) %>%
-  transmute(descricao, dif = fmt_num(dif_pp, 1), ic = paste(fmt_num(ic_inf, 1), "a", fmt_num(ic_sup, 1)), p = fmt_p(p_valor)) %>%
-  kbl(format = "latex", booktabs = TRUE, col.names = c("Comparação", "Diferença", "IC 95%", "p-valor"),
-      align = "lrrr", linesep = "") %>%
-  kable_styling(font_size = 7, position = "center") %>%
-  column_spec(1, width = "10.5cm") %>%
-  fonte_tabela(paste(nota_fonte_tabela, "Diferenças estimadas por modelos lineares ponderados no domínio dos grupos comparados, com intervalos de confiança de 95% baseados nos graus de liberdade do desenho. As diferenças do perfil de TV e internet estão na Tabela 3."))
+figura("grafico9_avaliacao_regiao")
 ```
 
-```{=latex}
-\endgroup
-```
+# Considerações finais {#sec-consideracoes}
 
-# Anexo B -- Voto declarado e sensibilidade da ponderação {.unnumbered}
+A pesquisa realizada pelo DOXA em parceria com a Quaest revela que o acesso à informação política entre os fluminenses é relativamente desigual. Embora cerca de `r pr("freq4", "Todo dia")` da população declare se informar sobre política diariamente, mais da metade afirma fazê-lo apenas "raramente" ou "nunca". A televisão continua sendo o meio de comunicação mais utilizado para esse fim, mas as redes sociais -- especialmente Facebook, Instagram e Twitter (atual X) -- vêm ganhando espaço, ainda que de forma desigual entre grupos sociais. Já os jornais impressos e revistas possuem relevância marginal, confirmando a tendência de migração para mídias digitais e audiovisuais.
 
-A @tbl-validacao-tse compara o voto declarado aos resultados oficiais do TSE no estado do Rio de Janeiro, com os pesos principais e com pesos calibrados também pela razão entre os votos válidos de Lula e de Bolsonaro no 2º turno de 2022. Com os pesos principais, o voto declarado em Lula supera o resultado oficial em `r fmt_num(validacao$pesos_principais[grepl("2º turno de 2022: Lula", validacao$resultado)] - validacao$tse[grepl("2º turno de 2022: Lula", validacao$resultado)], 1)` pontos percentuais, enquanto o voto para governador fica próximo do oficial. A calibração pelo voto presidencial ajusta o 2º turno por construção, mas afasta o voto declarado para governador do resultado oficial e vai além dele no 1º turno presidencial e no 2º turno de 2018. Entre os eleitores declarados de Castro, `r fmt_pct(validacao$pesos_principais[grepl("Eleitores de Castro", validacao$resultado)])` dizem ter votado em Lula no 2º turno, proporção difícil de conciliar com os resultados oficiais.
+Do ponto de vista regional, a capital fluminense apresenta maior frequência de acesso à informação política em comparação com a região metropolitana e os demais municípios. Cerca de `r pr("freq4", "Nunca", "area3", "RIO CAPITAL")` dos cariocas dizem nunca se informar sobre política, enquanto nas outras regiões esse percentual se aproxima dos 30%. Essa diferença pode refletir fatores como maior escolaridade, maior oferta de meios de comunicação e um ambiente político mais ativo na capital. No entanto, as fontes de informação não variam muito entre regiões: o noticiário televisivo mantém hegemonia, seguido pelas redes sociais e, em menor medida, pelos portais de notícia.
 
-A @tbl-sensibilidade mostra que as estimativas sobre informação política mudam menos de um ponto percentual com a calibração pelo voto. A exceção é a avaliação do governo Lula, cuja aprovação cai `r fmt_num(abs(sensibilidade$diferenca_pp[sensibilidade$rotulo == "Avalia o governo Lula como ótimo ou bom"]), 1)` pontos percentuais, além da composição de voto de cada público, alterada por construção.
+Quando a análise é segmentada por preferências eleitorais, surgem contrastes expressivos. Eleitores de Lula tendem a se informar mais pela TV, enquanto os de Bolsonaro utilizam mais as redes sociais. Já aqueles que não foram votar no 2º turno de 2022 se destacam por apresentarem os menores índices de engajamento informativo, com apenas `r pr("freq4", "Todo dia", "voto2t_4", "Não foi votar")` declarando se informar diariamente. Esses padrões se reproduzem na avaliação dos governos: quem se informa via TV tende a avaliar melhor o governo federal, enquanto o público que consome notícias políticas nas redes sociais tende a ser mais crítico. Além disso, o governo Lula era pior avaliado na região metropolitana, enquanto o governo estadual de Cláudio Castro recebia pior avaliação na capital.
 
-```{=latex}
-\begingroup\setstretch{1}
-```
-
-```{r}
-#| label: tbl-validacao-tse
-#| tbl-pos: "H"
-#| tbl-cap: "Voto declarado no survey e resultados oficiais do TSE no estado do Rio de Janeiro (% dos votos válidos)"
-
-validacao %>%
-  mutate(across(c(tse, pesos_principais, calibrado_por_voto), \(x) ifelse(is.na(x), "--", fmt_num(x, 1)))) %>%
-  kbl(format = "latex", booktabs = TRUE,
-      col.names = c("", "TSE", "Pesos principais", "Calibrado por voto"), align = "lrrr", linesep = "") %>%
-  kable_styling(font_size = 8, position = "center") %>%
-  column_spec(1, width = "8.3cm") %>%
-  fonte_tabela("Elaboração própria, com dados do survey DOXA/Quaest (jul. 2023) e do TSE. Votos válidos declarados excluem brancos, nulos e respostas \"não sabe\". No governo do estado, os votos declarados em Wilson Witzel e Luiz Eugênio, cujos votos foram anulados, não são contados como válidos.")
-```
-
-```{=latex}
-\endgroup
-```
-
-```{=latex}
-\begingroup\setstretch{1}
-```
-
-```{r}
-#| label: tbl-sensibilidade
-#| tbl-pos: "H"
-#| tbl-cap: "Estimativas com os pesos principais e com pesos calibrados também pelo voto no 2º turno de 2022 (%)"
-
-sensibilidade %>%
-  mutate(across(c(pesos_principais, calibrado_por_voto, diferenca_pp), \(x) fmt_num(x, 1))) %>%
-  kbl(format = "latex", booktabs = TRUE,
-      col.names = c("", "Pesos principais", "Calibrado por voto", "Diferença (p.p.)"), align = "lrrr", linesep = "") %>%
-  kable_styling(font_size = 8, position = "center") %>%
-  column_spec(1, width = "8.3cm") %>%
-  fonte_tabela(paste(nota_fonte_tabela, "Estimativas ponderadas. As duas últimas linhas trazem diferenças entre grupos, em pontos percentuais."))
-```
-
-```{=latex}
-\endgroup
-```
+Quem se informa principalmente pela TV e quem se informa principalmente pela internet formam públicos distintos. O público da TV é mais velho e menos escolarizado, com renda menor, e nele é maior a proporção dos que nunca se informam sobre política. O público da internet é mais jovem e mais escolarizado e reúne, em maior proporção, eleitores de Bolsonaro e simpatizantes do PL. Quem nunca se informa sobre política, por fim, declara com muito mais frequência não saber avaliar o governo estadual e não se identificar com ideologias ou partidos.

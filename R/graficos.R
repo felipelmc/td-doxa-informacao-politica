@@ -12,6 +12,9 @@ PALETAS <- list(
   freq4 = c("Todo dia" = "#54278F", "Toda semana" = "#807DBA", "Mensal ou raramente" = "#BCBDDC", "Nunca" = "#E5E4F0"),
   # grupos de fonte principal: Okabe-Ito
   fonte4 = c("TV" = "#E69F00", "Internet" = "#0072B2", "Outras fontes" = "#009E73", "Não se informa" = "#A6A6A6"),
+  # fonte4 com a internet dividida em dois tons de azul
+  fonte5 = c("TV" = "#E69F00", "Redes sociais e mensageiros" = "#0072B2", "Sites, portais e busca" = "#56B4E9",
+             "Outras fontes" = "#009E73", "Não se informa" = "#A6A6A6"),
   # avaliação de governo (divergente): verde-azulado a marrom
   avaliacao = c("Ótimo ou bom" = "#01665E", "Regular" = "#B8B8B8", "Ruim ou péssimo" = "#8C510A",
                 "Não sabe ou não respondeu" = "#E8E8E8"),
@@ -20,7 +23,7 @@ PALETAS <- list(
 )
 
 # texto branco sobre as cores escuras de cada paleta
-TEXTO_CLARO <- c("Todo dia", "Toda semana", "Ótimo ou bom", "Ruim ou péssimo")
+TEXTO_CLARO <- c("Todo dia", "Toda semana", "Ótimo ou bom", "Ruim ou péssimo", "Redes sociais e mensageiros")
 
 tema_td <- function(base_size = 9) {
   ggplot2::theme_minimal(base_size = base_size, base_family = FONTE_GRAFICOS) +
@@ -93,11 +96,12 @@ grafico_barras <- function(tabela, rotulos, cores, limite = NULL, legenda = NULL
 }
 
 # Barras 100% empilhadas: uma barra por grupo, segmentos na ordem de `niveis`.
-# `tabela`: linhas de proporcoes() com colunas painel, grupo_rotulo, categoria, pct.
+# `tabela`: linhas de proporcoes() com colunas painel, grupo_rotulo, categoria, pct e instavel.
+# Segmentos abaixo de `minimo_rotulo` ou com estimativa instável ficam sem rótulo.
 grafico_empilhado <- function(tabela, niveis, cores, nota = nota_fonte(), minimo_rotulo = 5) {
   tabela <- tabela %>%
     dplyr::mutate(categoria = factor(categoria, levels = niveis),
-                  texto = ifelse(pct >= minimo_rotulo, paste0(formatC(pct, format = "f", digits = 0), "%"), ""),
+                  texto = ifelse(pct >= minimo_rotulo & !instavel, paste0(formatC(pct, format = "f", digits = 0), "%"), ""),
                   cor_texto = ifelse(categoria %in% TEXTO_CLARO, "white", "grey10"))
   ggplot2::ggplot(tabela, ggplot2::aes(x = pct, y = grupo_rotulo, fill = categoria)) +
     ggplot2::geom_col(width = 0.72, colour = "white", linewidth = 0.3, position = ggplot2::position_stack(reverse = TRUE)) +
@@ -113,30 +117,4 @@ grafico_empilhado <- function(tabela, niveis, cores, nota = nota_fonte(), minimo
     ggplot2::theme(panel.grid.major.x = ggplot2::element_blank(), strip.placement = "outside",
                    strip.text.y.left = ggplot2::element_text(angle = 0, face = "bold", hjust = 0, vjust = 1),
                    axis.text.x = ggplot2::element_blank())
-}
-
-# Pontos com IC: categorias no eixo vertical, grupos diferenciados por forma e tom de cinza.
-# Estimativas instáveis (n < 30 ou CV > 30%) aparecem com marcador vazado.
-# `tabela`: linhas de proporcoes() com colunas categoria_rotulo, grupo_rotulo, pct, ic_inf, ic_sup, instavel.
-grafico_pontos <- function(tabela, titulo_painel = NULL, limite = NULL) {
-  grupos <- levels(tabela$grupo_rotulo)
-  formas <- c(21, 24, 22)[seq_along(grupos)]
-  tons <- c("grey10", "grey45", "grey75")[seq_along(grupos)]
-  tabela <- tabela %>% dplyr::mutate(preenchimento = ifelse(instavel, "white", tons[as.integer(grupo_rotulo)]))
-  pd <- ggplot2::position_dodge(width = 0.6, reverse = TRUE)
-  ggplot2::ggplot(tabela, ggplot2::aes(x = pct, y = categoria_rotulo, group = grupo_rotulo)) +
-    ggplot2::geom_linerange(ggplot2::aes(xmin = ic_inf, xmax = ic_sup, colour = grupo_rotulo), linewidth = 0.45,
-                            position = pd, na.rm = TRUE) +
-    ggplot2::geom_point(ggplot2::aes(shape = grupo_rotulo, fill = preenchimento, colour = grupo_rotulo), size = 1.9,
-                        stroke = 0.5, position = pd) +
-    ggplot2::scale_shape_manual(values = stats::setNames(formas, grupos)) +
-    ggplot2::scale_colour_manual(values = stats::setNames(tons, grupos)) +
-    ggplot2::scale_fill_identity() +
-    ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(fill = tons))) +
-    pct_eixo(limite) +
-    ggplot2::labs(x = NULL, y = NULL, subtitle = titulo_painel) +
-    tema_td() +
-    ggplot2::theme(plot.subtitle = ggplot2::element_text(face = "bold", size = 9, margin = ggplot2::margin(b = 2)),
-                   plot.title.position = "plot",
-                   panel.grid.major.y = ggplot2::element_line(colour = "grey94", linewidth = 0.3))
 }

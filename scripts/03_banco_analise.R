@@ -20,7 +20,7 @@ colunas <- c(
   "id", "peso", "cod_setor", "cod_ibge", "mun", "zona",
   "sexo", "idadef", "cor", "esc_faixa", "esc2", "area3", "rendaf", "renda_grp",
   "freq_inf_pol", "freq4", "inf1", "fonte4", "fonte5", "redes_pol", "redes_pol_out", "redes_rec", "redes_grp",
-  "crivo_votou_1t", "cen2_votou_1t", "cen_t2", "voto2t_3", "cen2_votou_1t_govrj", "gov_cat", "gov_2", "cen_t2_18",
+  "crivo_votou_1t", "cen2_votou_1t", "cen_t2", "voto2t_3", "voto2t_4", "cen2_votou_1t_govrj", "gov_cat", "gov_2", "cen_t2_18",
   "adpi1_lula", "aval_lula3", "adpi1_gov", "aval_gov3",
   "ideologia", "ideologia_grp", "part_pref", "part_pref_grp"
 )
@@ -54,6 +54,7 @@ derivadas <- tribble(
   "redes_grp", "redes_rec", "Não usa redes sociais, Facebook, Instagram, WhatsApp ou Telegram, YouTube e Twitter (X) mantidos; TikTok ou Kwai, outra rede, não é rede social e não sabe -> Outras respostas",
   "esc2", "esc_faixa", "Sem instrução/fundamental incompleto e fundamental completo/médio incompleto -> Até médio incompleto; médio completo/superior incompleto e superior completo -> Médio completo ou mais",
   "voto2t_3", "cen_t2", "Lula; Bolsonaro; branco/nulo e não foi votar -> Branco, nulo ou não votou; não sabe e não quis responder -> NA",
+  "voto2t_4", "cen_t2", "Lula; Bolsonaro; branco/nulo -> Branco ou nulo; não foi votar; não sabe e não quis responder -> NA",
   "gov_cat", "cen2_votou_1t_govrj, crivo_votou_1t", "Castro; Freixo; demais candidatos (inclui Witzel, com candidatura indeferida) -> Outros candidatos; branco/nulo; não votou no 1º turno (crivo_votou_1t = NÃO); não quis responder ou não sabe se votou",
   "gov_2", "gov_cat", "Castro ou Freixo; demais -> NA",
   "aval_lula3", "adpi1_lula", "Ótimo e bom -> Ótimo ou bom; regular (+ ou -) -> Regular; ruim e péssimo -> Ruim ou péssimo; não sabe e não quis responder -> Não sabe ou não respondeu",
@@ -72,6 +73,7 @@ tipo_coluna <- function(x) {
 significado_na <- c(
   freq4 = "Não sabe responder",
   voto2t_3 = "Não sabe ou não quis responder",
+  voto2t_4 = "Não sabe ou não quis responder",
   gov_2 = "Não votou em Castro nem em Freixo",
   cen2_votou_1t_govrj = "Não votou no 1º turno ou não sabe se votou (pergunta filtrada por crivo_votou_1t)",
   cen2_votou_1t = "Não votou no 1º turno ou não sabe se votou (pergunta filtrada por crivo_votou_1t)",

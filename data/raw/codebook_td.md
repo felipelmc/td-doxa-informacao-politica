@@ -69,7 +69,7 @@ Tipo: categórica. Uso no TD: Calibração dos pesos (área × faixa etária), e
 
 **Questão 3.** ATÉ QUAL ANO/SÉRIE VOCÊ ESTUDOU E CONCLUIU NA ESCOLA? (RU)
 
-Tipo: categórica. Uso no TD: Origem de esc_faixa (calibração: área × escolaridade) e esc2 (cruzamentos).
+Tipo: categórica. Uso no TD: Origem de esc_faixa: calibração (área × escolaridade) e perfil de TV × internet.
 
 | Código | Categoria | n |
 |---:|---|---:|
@@ -137,7 +137,7 @@ Tipo: categórica. Uso no TD: Filtro das perguntas de voto no 1º turno → gov_
 
 **Questão 10.** (MOSTRAR ANEXO CIRCULAR “CENÁRIO PRESIDENTE PRIMEIRO TURNO”) EM QUEM VOCÊ VOTOU PARA PRESIDENTE NO PRIMEIRO TURNO? (LER TODAS AS OPÇÕES – RU)
 
-Tipo: categórica. Uso no TD: Comparação do voto declarado com o TSE, presidente no 1º turno de 2022 (Anexo B).
+Tipo: categórica. Uso no TD: Comparação do voto declarado com o TSE, presidente no 1º turno de 2022 (output/estimativas/voto_declarado_tse.csv).
 
 | Código | Categoria | n |
 |---:|---|---:|
@@ -160,7 +160,7 @@ Tipo: categórica. Uso no TD: Comparação do voto declarado com o TSE, presiden
 
 **Questão 11.** E EM QUEM VOCÊ VOTOU NO SEGUNDO TURNO PARA PRESIDENTE? VOCÊ VOTOU NO JAIR BOLSONARO, NO LULA, VOTOU EM BRANCO/NULO OU NÃO FOI VOTAR? (RU)
 
-Tipo: categórica. Uso no TD: Origem de voto2t_3 (Lula; Bolsonaro; branco, nulo ou não votou): cruzamentos e Anexo B.
+Tipo: categórica. Uso no TD: Origem de voto2t_3 (Lula; Bolsonaro; branco, nulo ou não votou) e voto2t_4 (Lula; Bolsonaro; branco ou nulo; não foi votar): cruzamentos e comparação com o TSE.
 
 | Código | Categoria | n |
 |---:|---|---:|
@@ -175,7 +175,7 @@ Tipo: categórica. Uso no TD: Origem de voto2t_3 (Lula; Bolsonaro; branco, nulo 
 
 **Questão 12.** (MOSTRAR ANEXO CIRCULAR “CENÁRIO GOVERNADOR PRIMEIRO TURNO 2022”) E PARA GOVERNADOR? EM QUEM VOCÊ VOTOU PARA GOVERNADOR DO RIO JANEIRO NO PRIMEIRO TURNO? (LER TODAS AS OPÇÕES – RU)
 
-Tipo: categórica. Uso no TD: Origem de gov_cat e gov_2 (Castro × Freixo): cruzamentos e Anexo B.
+Tipo: categórica. Uso no TD: Origem de gov_cat e gov_2 (Castro × Freixo): cruzamentos e comparação com o TSE.
 
 | Código | Categoria | n |
 |---:|---|---:|
@@ -196,7 +196,7 @@ Tipo: categórica. Uso no TD: Origem de gov_cat e gov_2 (Castro × Freixo): cruz
 
 **Questão 13.** PENSANDO AGORA NAS ELEIÇÕES DE 2018. EM QUEM VOCÊ VOTOU NO SEGUNDO TURNO PARA PRESIDENTE EM 2018: VOCÊ VOTOU NO {0}, NO {1}, VOTOU BRANCO/NULO OU NÃO FOI VOTAR? (RU)
 
-Tipo: categórica. Uso no TD: Comparação do voto declarado com o TSE, presidente no 2º turno de 2018 (Anexo B).
+Tipo: categórica. Uso no TD: Comparação do voto declarado com o TSE, presidente no 2º turno de 2018 (output/estimativas/voto_declarado_tse.csv).
 
 | Código | Categoria | n |
 |---:|---|---:|
@@ -210,7 +210,7 @@ Tipo: categórica. Uso no TD: Comparação do voto declarado com o TSE, presiden
 
 **Questão 16.** NA SUA OPINIÃO, O PRESIDENTE LULA ESTÁ FAZENDO UM GOVERNO ÓTIMO, BOM, REGULAR, RUIM OU PÉSSIMO? (RU) (ATENÇÃO ENTREVISTADOR(A): SE A RESPOSTA FOR "REGULAR", PERGUNTAR SE É MAIS PARA POSITIVO OU MAIS PARA NEGATIVO)
 
-Tipo: categórica. Uso no TD: Origem de aval_lula3: avaliação do governo Lula por fonte e por frequência.
+Tipo: categórica. Uso no TD: Origem de aval_lula3: avaliação do governo Lula por fonte, por frequência e por região.
 
 | Código | Categoria | n |
 |---:|---|---:|
@@ -227,7 +227,7 @@ Tipo: categórica. Uso no TD: Origem de aval_lula3: avaliação do governo Lula 
 
 **Questão 17.** COMO VOCÊ AVALIA O GOVERNO DE CLÁUDIO CASTRO? NA SUA OPINIÃO, O GOVERNADOR CLÁUDIO CASTRO ESTÁ FAZENDO UM GOVERNO ÓTIMO, BOM, REGULAR, RUIM OU PÉSSIMO? (RU) (ATENÇÃO ENTREVISTADOR(A): SE A RESPOSTA FOR "REGULAR", PERGUNTAR SE É MAIS PARA POSI
 
-Tipo: categórica. Uso no TD: Origem de aval_gov3: avaliação do governo Castro e formação de opinião.
+Tipo: categórica. Uso no TD: Origem de aval_gov3: avaliação do governo Castro por frequência e por região, e formação de opinião.
 
 | Código | Categoria | n |
 |---:|---|---:|

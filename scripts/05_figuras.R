@@ -1,7 +1,7 @@
 # 05 — Figuras do TD.
 #
 # Entrada: output/estimativas/proporcoes.rds
-# Saída:   output/figuras/grafico1_frequencia ... grafico7_avaliacao_fonte (PDF vetorial e PNG 300 dpi)
+# Saída:   output/figuras/grafico1_frequencia ... grafico9_avaliacao_regiao (PDF vetorial e PNG 300 dpi)
 
 suppressPackageStartupMessages({
   library(dplyr)
@@ -35,8 +35,9 @@ salvar_figura(g1, "grafico1_frequencia", altura = 2.7)
 # Gráfico 2: fonte principal de informação -------------------------------------------------------
 g2_dados <- total("inf1") %>% arrange(match(categoria, names(ROTULOS_CATEGORIAS$inf1)))
 grupo_fonte <- c("NOTICIÁRIO DA TV" = "TV",
-                 "REDES SOCIAIS COMO FACEBOOK, INSTAGRAM OU TWITTER" = "Internet", "WHATSAPP OU TELEGRAM" = "Internet",
-                 "SITES, BLOGS E PORTAIS DE NOTÍCIAS" = "Internet", "BUSCA NO GOOGLE" = "Internet",
+                 "REDES SOCIAIS COMO FACEBOOK, INSTAGRAM OU TWITTER" = "Redes sociais e mensageiros",
+                 "WHATSAPP OU TELEGRAM" = "Redes sociais e mensageiros",
+                 "SITES, BLOGS E PORTAIS DE NOTÍCIAS" = "Sites, portais e busca", "BUSCA NO GOOGLE" = "Sites, portais e busca",
                  "RÁDIO" = "Outras fontes", "JORNAIS IMPRESSOS E REVISTAS" = "Outras fontes",
                  "CONVERSAS COM AMIGOS, FAMILIARES" = "Outras fontes", "CONVERSAS COM COLEGAS DE TRABALHOS" = "Outras fontes",
                  "NENHUM DESTES" = "Não se informa", "NÃO ME INFORMO SOBRE POLÍTICA (NÃO LER)" = "Não se informa",
@@ -45,11 +46,11 @@ stopifnot(all(g2_dados$categoria %in% names(grupo_fonte)))
 g2 <- grafico_barras(
   g2_dados,
   rotulos = unname(ROTULOS_CATEGORIAS$inf1[g2_dados$categoria]),
-  cores = unname(PALETAS$fonte4[grupo_fonte[g2_dados$categoria]]),
-  legenda = PALETAS$fonte4,
+  cores = unname(PALETAS$fonte5[grupo_fonte[g2_dados$categoria]]),
+  legenda = PALETAS$fonte5,
   nota = nota_fonte(paste0(nota_ic, " Resposta única. As cores indicam os grupos de fonte usados nos cruzamentos. n = ",
                            formatC(n_total, big.mark = ".", decimal.mark = ",", format = "d"), "."))
-)
+) + guides(fill = guide_legend(nrow = 2, byrow = TRUE))
 salvar_figura(g2, "grafico2_fontes", altura = 3.5)
 
 # Gráfico 3: rede social mais usada para se informar sobre política -----------------------------------
@@ -64,71 +65,96 @@ g3 <- grafico_barras(
 )
 salvar_figura(g3, "grafico3_redes", altura = 2.9)
 
-# Gráfico 4: frequência por voto declarado ----------------------------------------------------------
 com_n <- function(tab, rotulo_painel, rotulos = NULL) {
   tab %>%
     mutate(painel = rotulo_painel,
            grupo_nome = if (is.null(rotulos)) grupo else unname(rotulos[grupo]),
            grupo_rotulo = rotulo_n(grupo_nome, n_grupo))
 }
-g4_dados <- bind_rows(
-  total("freq4") %>% mutate(grupo = "Total") %>% com_n(" "),
-  por_grupo("freq4", "voto2t_3") %>% com_n("Presidente,\n2º turno de 2022"),
-  por_grupo("freq4", "gov_2") %>% com_n("Governador,\n1º turno de 2022")
-) %>%
-  mutate(painel = factor(painel, levels = unique(painel)),
-         grupo_rotulo = factor(grupo_rotulo, levels = rev(unique(grupo_rotulo))))
-g4 <- grafico_empilhado(
-  g4_dados, niveis = names(PALETAS$freq4), cores = PALETAS$freq4,
-  nota = nota_fonte(paste0(
-    "Estimativas ponderadas. Voto declarado; \"não sabe\" sobre a frequência (",
-    fmt_pct_fig(total("freq_inf_pol")$pct[total("freq_inf_pol")$categoria == "NÃO SABE RESPONDER (NÃO LER)"]),
-    ") e sobre o voto excluídos. O recorte do governador inclui apenas os eleitores declarados de Cláudio Castro e Marcelo Freixo (",
-    fmt_pct_fig(100 * sum(distinct(por_grupo("freq4", "gov_2"), grupo, n_grupo)$n_grupo) / n_total), " da amostra)."
-  ))
-)
-salvar_figura(g4, "grafico4_frequencia_voto", altura = 3.2)
-
-# Gráfico 5: grupo de fonte principal por voto declarado ---------------------------------------------
-rotulos_fonte5 <- ROTULOS_CATEGORIAS$fonte5
-pontos <- function(tab) {
+ordenar <- function(tab) {
   tab %>%
-    mutate(categoria_rotulo = factor(categoria, levels = rev(names(rotulos_fonte5))),
-           grupo_rotulo = rotulo_n(grupo, n_grupo),
-           grupo_rotulo = factor(grupo_rotulo, levels = unique(grupo_rotulo)))
+    mutate(painel = factor(painel, levels = unique(painel)),
+           grupo_rotulo = factor(grupo_rotulo, levels = rev(unique(grupo_rotulo))))
 }
-g5a <- grafico_pontos(pontos(por_grupo("fonte5", "voto2t_3")), "Voto declarado para presidente, 2º turno de 2022", limite = 55)
-g5b <- grafico_pontos(pontos(por_grupo("fonte5", "gov_2")), "Voto declarado para governador, 1º turno de 2022", limite = 55)
-g5 <- (g5a / g5b) +
-  plot_annotation(caption = nota_fonte(paste(nota_ic, "Marcadores vazados: estimativas instáveis (n < 30 ou coeficiente de variação > 30%).")),
-                  theme = tema_td())
-salvar_figura(g5, "grafico5_fontes_voto", altura = 5.2)
-
-# Gráfico 7: avaliação dos governos por grupo de fonte principal ---------------------------------------
-g6_dados <- bind_rows(
-  por_grupo("aval_lula3", "fonte5") %>% com_n("Governo Lula"),
-  por_grupo("aval_gov3", "fonte5") %>% com_n("Governo\nCláudio Castro")
-) %>%
-  mutate(painel = factor(painel, levels = unique(painel)),
-         grupo_rotulo = factor(grupo_rotulo, levels = rev(unique(grupo_rotulo))))
-g6 <- grafico_empilhado(
-  g6_dados, niveis = names(PALETAS$avaliacao), cores = PALETAS$avaliacao,
-  nota = nota_fonte("Estimativas ponderadas. Os grupos de fonte seguem a pergunta sobre a fonte pela qual mais se informa sobre política.")
+regioes <- c("RIO CAPITAL" = "Capital", "RM (EXCETO CAPITAL)" = "RM (exceto capital)", "DEMAIS MUNICÍPIOS" = "Demais municípios")
+eleitores <- c("Lula", "Bolsonaro", "Não foi votar")
+painel_presidente <- "Presidente,\n2º turno de 2022"
+painel_governador <- "Governador,\n1º turno de 2022"
+nota_voto <- paste0(
+  "Estimativas ponderadas. Voto declarado; não inclui quem votou branco ou nulo no 2º turno, quem não soube ou não quis ",
+  "informar o voto nem quem não votou em Cláudio Castro ou Marcelo Freixo para governador."
 )
-salvar_figura(g6, "grafico7_avaliacao_fonte", altura = 4.1)
 
-# Gráfico 6: frequência com que se informa, por avaliação dos governos ----------------------------------
+# Gráfico 4: frequência e fonte principal por região ------------------------------------------------
+# dois blocos, cada um com título e legenda próprios, separados por um espaço
+titulo_bloco <- function(titulo) {
+  list(labs(title = titulo),
+       theme(plot.title = element_text(face = "bold", size = 9, hjust = 0), plot.title.position = "plot",
+             strip.text.y.left = element_blank()))
+}
+g4a <- grafico_empilhado(
+  por_grupo("freq4", "area3") %>% com_n(" ", regioes) %>% ordenar(),
+  niveis = names(PALETAS$freq4), cores = PALETAS$freq4, nota = NULL
+) + titulo_bloco("Frequência com que se informa sobre política")
+g4b <- grafico_empilhado(
+  por_grupo("fonte5", "area3") %>% com_n(" ", regioes) %>% ordenar(),
+  niveis = names(PALETAS$fonte5), cores = PALETAS$fonte5, nota = NULL
+) + titulo_bloco("Fonte principal de informação sobre política") + guides(fill = guide_legend(nrow = 2, byrow = TRUE))
+g4 <- (g4a / plot_spacer() / g4b) + plot_layout(heights = c(1, 0.16, 1)) +
+  plot_annotation(caption = nota_fonte(paste(
+    "Estimativas ponderadas. A Região Metropolitana segue a LC estadual 184/2018 e inclui Petrópolis.",
+    "\"Não sabe\" sobre a frequência excluído."
+  )), theme = tema_td())
+salvar_figura(g4, "grafico4_regiao", altura = 4.3)
+
+# Gráfico 5: frequência por voto declarado ----------------------------------------------------------
+g5_dados <- bind_rows(
+  por_grupo("freq4", "voto2t_4") %>% filter(grupo %in% eleitores) %>% com_n(painel_presidente),
+  por_grupo("freq4", "gov_2") %>% com_n(painel_governador)
+) %>% ordenar()
+g5 <- grafico_empilhado(g5_dados, niveis = names(PALETAS$freq4), cores = PALETAS$freq4,
+                        nota = nota_fonte(paste(nota_voto, "\"Não sabe\" sobre a frequência excluído.")))
+salvar_figura(g5, "grafico5_frequencia_voto", altura = 3.1)
+
+# Gráfico 6: fonte principal por voto declarado ------------------------------------------------------
+g6_dados <- bind_rows(
+  por_grupo("fonte5", "voto2t_4") %>% filter(grupo %in% eleitores) %>% com_n(painel_presidente),
+  por_grupo("fonte5", "gov_2") %>% com_n(painel_governador)
+) %>% ordenar()
+g6 <- grafico_empilhado(g6_dados, niveis = names(PALETAS$fonte5), cores = PALETAS$fonte5,
+                        nota = nota_fonte(paste(nota_voto, "Os grupos de fonte seguem a pergunta sobre a fonte pela qual mais se informa sobre política."))) +
+  guides(fill = guide_legend(nrow = 2, byrow = TRUE))
+salvar_figura(g6, "grafico6_fontes_voto", altura = 3.4)
+
+# Gráfico 7: frequência com que se informa, por avaliação dos governos ----------------------------------
 avaliacoes <- c("Ótimo ou bom", "Regular", "Ruim ou péssimo")
 g7_dados <- bind_rows(
   por_grupo("freq4", "aval_lula3") %>% filter(grupo %in% avaliacoes) %>% com_n("Governo Lula"),
   por_grupo("freq4", "aval_gov3") %>% filter(grupo %in% avaliacoes) %>% com_n("Governo\nCláudio Castro")
-) %>%
-  mutate(painel = factor(painel, levels = unique(painel)),
-         grupo_rotulo = factor(grupo_rotulo, levels = rev(unique(grupo_rotulo))))
+) %>% ordenar()
 g7 <- grafico_empilhado(
   g7_dados, niveis = names(PALETAS$freq4), cores = PALETAS$freq4,
   nota = nota_fonte("Estimativas ponderadas. Exclui quem não sabe ou não quis avaliar o governo e quem não sabe com que frequência se informa.")
 )
-salvar_figura(g7, "grafico6_frequencia_avaliacao", altura = 3.0)
+salvar_figura(g7, "grafico7_frequencia_avaliacao", altura = 3.0)
 
-cat("05_figuras: 7 gráficos salvos em output/figuras\n")
+# Gráfico 8: avaliação do governo Lula por grupo de fonte principal ----------------------------------------
+g8_dados <- por_grupo("aval_lula3", "fonte5") %>% com_n("Governo Lula") %>% ordenar()
+g8 <- grafico_empilhado(
+  g8_dados, niveis = names(PALETAS$avaliacao), cores = PALETAS$avaliacao,
+  nota = nota_fonte("Estimativas ponderadas. Os grupos de fonte seguem a pergunta sobre a fonte pela qual mais se informa sobre política.")
+)
+salvar_figura(g8, "grafico8_avaliacao_fonte", altura = 2.5)
+
+# Gráfico 9: avaliação dos governos por região -----------------------------------------------------------
+g9_dados <- bind_rows(
+  por_grupo("aval_lula3", "area3") %>% com_n("Governo Lula", regioes),
+  por_grupo("aval_gov3", "area3") %>% com_n("Governo\nCláudio Castro", regioes)
+) %>% ordenar()
+g9 <- grafico_empilhado(
+  g9_dados, niveis = names(PALETAS$avaliacao), cores = PALETAS$avaliacao,
+  nota = nota_fonte("Estimativas ponderadas. A Região Metropolitana segue a LC estadual 184/2018 e inclui Petrópolis.")
+)
+salvar_figura(g9, "grafico9_avaliacao_regiao", altura = 2.6)
+
+cat("05_figuras: 9 gráficos salvos em output/figuras\n")

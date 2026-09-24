@@ -18,6 +18,9 @@ rscript <- file.path(R.home("bin"), "Rscript")
 message(">> tests/checar_insumos.R")
 if (system2(rscript, shQuote(here::here("tests/checar_insumos.R"))) != 0) stop("Os insumos em data/external não conferem")
 
+# estimativas e figuras são sempre recriadas do zero
+unlink(here::here(c("output/estimativas", "output/figuras")), recursive = TRUE)
+
 for (etapa in etapas) {
   message("\n>> ", etapa)
   if (system2(rscript, shQuote(here::here(etapa))) != 0) stop("Falha na etapa ", etapa)

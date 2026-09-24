@@ -121,6 +121,12 @@ derivar_variaveis_analise <- function(df) {
         cen_t2 == "JAIR BOLSONARO" ~ "Bolsonaro",
         cen_t2 %in% c("BRANCO/NULO", "NÃO FOI VOTAR") ~ "Branco, nulo ou não votou"
       ), "voto2t_3"),
+      voto2t_4 = fator(dplyr::case_when(
+        cen_t2 == "LULA" ~ "Lula",
+        cen_t2 == "JAIR BOLSONARO" ~ "Bolsonaro",
+        cen_t2 == "BRANCO/NULO" ~ "Branco ou nulo",
+        cen_t2 == "NÃO FOI VOTAR" ~ "Não foi votar"
+      ), "voto2t_4"),
       gov_cat = fator(dplyr::case_when(
         cen2_votou_1t_govrj == "CLÁUDIO CASTRO" ~ "Castro",
         cen2_votou_1t_govrj == "MARCELO FREIXO" ~ "Freixo",
@@ -161,6 +167,7 @@ derivar_variaveis_analise <- function(df) {
     identical(is.na(out$redes_rec), is.na(out$redes_pol)),
     identical(is.na(out$redes_grp), is.na(out$redes_pol)),
     identical(is.na(out$esc2), is.na(out$esc_faixa)),
+    identical(is.na(out$voto2t_4), is.na(out$voto2t_3)),
     identical(is.na(out$aval_lula3), is.na(out$adpi1_lula)),
     identical(is.na(out$aval_gov3), is.na(out$adpi1_gov)),
     identical(is.na(out$renda_grp), is.na(out$rendaf)),
