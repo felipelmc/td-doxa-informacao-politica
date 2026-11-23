@@ -69,21 +69,23 @@ source(here::here("R/rotulos.R"))
 source(here::here("R/formatar.R"))
 
 ler_estimativa <- function(nome) readRDS(here::here("output/estimativas", paste0(nome, ".rds")))
-P <- ler_estimativa("proporcoes")
+prop <- ler_estimativa("proporcoes")
 voto_tse <- ler_estimativa("voto_declarado_tse")
 banco <- readRDS(here::here("data/analysis/td_informacao.rds"))
 fluxo <- readr::read_csv(here::here("output/diagnosticos/fluxo_amostra.csv"), show_col_types = FALSE)
 
 url_repositorio <- "https://github.com/felipelmc/td-doxa-informacao-politica"
 
-# números do texto: todos calculados em scripts/04_estimativas.R
+# números do texto: todos calculados em scripts/04_estimativas.R. Os nomes são curtos porque aparecem no meio
+# dos parágrafos. pr() formata o percentual e interrompe o render se a estimativa for instável; prv() devolve o
+# número; soma() soma categorias.
 pr <- function(..., digitos = 0) {
-  l <- buscar_prop(P, ...)
-  if (isTRUE(l$instavel)) stop("Estimativa instável citada no texto: ", paste(c(...), collapse = " | "))
-  fmt_pct(l$pct, digitos)
+  linha <- extrair_proporcao(prop, ...)
+  if (isTRUE(linha$instavel)) stop("Estimativa instável citada no texto: ", paste(c(...), collapse = " | "))
+  fmt_pct(linha$pct, digitos)
 }
-prv <- function(...) buscar_prop(P, ...)$pct
-soma <- function(variavel, categorias, ...) fmt_pct(sum(purrr::map_dbl(categorias, \(k) prv(variavel, k, ...))))
+prv <- function(...) extrair_proporcao(prop, ...)$pct
+soma <- function(variavel, categorias, ...) fmt_pct(sum(sapply(categorias, function(k) prv(variavel, k, ...))))
 n_etapa <- function(padrao) fluxo$n[grepl(padrao, fluxo$etapa)]
 tse <- function(padrao, coluna = "tse") fmt_pct(voto_tse[[coluna]][grepl(padrao, voto_tse$resultado, fixed = TRUE)], 1)
 

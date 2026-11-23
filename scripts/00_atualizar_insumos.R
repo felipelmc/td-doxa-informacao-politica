@@ -1,4 +1,4 @@
-# 00 — Atualiza os insumos externos (REQUER INTERNET; opcional).
+# 00: atualiza os insumos externos. Requer internet e é opcional.
 #
 # O pipeline principal (run_all.R) NÃO executa este script: ele lê as cópias salvas em data/external/.
 # Rode apenas se quiser baixar de novo os dados de origem:
@@ -19,7 +19,7 @@ options(timeout = 900)
 dir_ext <- here::here("data/external")
 dir.create(dir_ext, showWarnings = FALSE, recursive = TRUE)
 
-# Censo 2022 (SIDRA, tabela 10061) --------------------------------------------------
+### ----- Censo 2022 (SIDRA, tabela 10061) -----
 # Pessoas de 18 anos ou mais por nível de instrução, grupo de idade, sexo e cor ou raça.
 municipios_rj <- c(
   3300605,3302205,3302304,3303104,3304102,3300902,3303005,3304706,3301009,3301405,3302403,3304805,3305000,
@@ -62,7 +62,7 @@ stopifnot(n_distinct(censo$cod_ibge) == 92)
 arquivo_censo <- file.path(dir_ext, "censo2022_t10061_rj_municipios.csv.gz")
 write_csv(censo, arquivo_censo)
 
-# Região Metropolitana ---------------------------------------------------------------
+### ----- Região Metropolitana -----
 # Composição legal (Lei Complementar estadual nº 184, de 27/12/2018): 22 municípios, incluindo a capital.
 municipios_rm <- c(
   3300456,3300803,3301702,3301850,3301900,3302007,3302270,3302502,3302700,3302858,3303203,3303302,3303500,
@@ -70,14 +70,14 @@ municipios_rm <- c(
 )
 stopifnot(length(unique(municipios_rm)) == 22, all(municipios_rm %in% municipios_rj))
 
-rm_rj <- censo |>
-  distinct(cod_ibge, municipio) |>
-  mutate(rm = as.integer(cod_ibge %in% as.character(municipios_rm))) |>
+rm_rj <- censo %>%
+  distinct(cod_ibge, municipio) %>%
+  mutate(rm = as.integer(cod_ibge %in% as.character(municipios_rm))) %>%
   arrange(cod_ibge)
 stopifnot(sum(rm_rj$rm) == 22)
 write_csv(rm_rj, file.path(dir_ext, "rm_rj.csv"))
 
-# TSE: resultados no RJ --------------------------------------------------------------
+### ----- TSE: resultados no RJ -----
 # 2022: API oficial de resultados do TSE. 2018 (2º turno): valores publicados pelo TSE,
 # transcritos da Wikipédia (sem endpoint equivalente para 2018).
 num_br <- function(x) as.numeric(gsub(",", ".", x))
@@ -102,12 +102,12 @@ candidatos <- bind_rows(
   map(resultados, "candidatos"),
   tibble(pleito = 2018, turno = 2, cargo = "Presidente", candidato = c("JAIR BOLSONARO", "FERNANDO HADDAD"),
          votos = c(5669059, 2673386), pct_validos = c(67.95, 32.05), fonte = fonte_2018)
-) |>
+) %>%
   mutate(candidato = gsub("&apos;", "'", candidato, fixed = TRUE))
 write_csv(candidatos, file.path(dir_ext, "tse_rj_candidatos.csv"))
 write_csv(bind_rows(map(resultados, "totais")), file.path(dir_ext, "tse_rj_totais.csv"))
 
-# Proveniência ----------------------------------------------------------------------
+### ----- Proveniência -----
 arquivos <- setdiff(list.files(dir_ext, pattern = "\\.(csv|gz)$", full.names = TRUE), file.path(dir_ext, "hashes.csv"))
 hashes <- tibble(arquivo = basename(arquivos),
                  sha256 = map_chr(arquivos, \(f) digest::digest(file = f, algo = "sha256")))

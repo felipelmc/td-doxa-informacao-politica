@@ -1,4 +1,4 @@
-# 03 — Banco de análise do TD e dicionários de dados.
+# 03: banco de análise do TD e dicionários de dados.
 #
 # Entrada: data/processed/survey_ponderado.rds, data/raw/quaest_rj_2023_td.rds (enunciados)
 # Saída:   data/analysis/td_informacao.csv (UTF-8) e td_informacao.rds (fatores ordenados)
@@ -15,7 +15,7 @@ df <- readRDS(here::here("data/processed/survey_ponderado.rds")) %>%
 
 enunciados <- attr(readRDS(here::here("data/raw/quaest_rj_2023_td.rds")), "variable.labels")
 
-# colunas do banco de análise: identificação e desenho, perfil, informação, política ---------
+### ----- colunas do banco de análise: identificação e desenho, perfil, informação, política -----
 colunas <- c(
   "id", "peso", "cod_setor", "cod_ibge", "mun", "zona",
   "sexo", "idadef", "cor", "esc_faixa", "esc2", "area3", "rendaf", "renda_grp",
@@ -43,7 +43,8 @@ dir.create(dir_analise, showWarnings = FALSE, recursive = TRUE)
 saveRDS(banco, file.path(dir_analise, "td_informacao.rds"))
 readr::write_csv(banco, file.path(dir_analise, "td_informacao.csv"), na = "")
 
-# dicionário de variáveis ---------
+### ----- dicionário de variáveis -----
+# regra de construção de cada variável derivada
 derivadas <- tribble(
   ~variavel, ~variavel_origem, ~regra,
   "renda_grp", "rendaf", "Até 1 SM e 1-2 SM -> Até 2 salários mínimos; 2-3 e 3-5 SM -> Mais de 2 a 5; acima de 5 SM -> Mais de 5",
@@ -67,9 +68,10 @@ derivadas <- tribble(
   "peso", "sexo, idadef, esc_faixa, area3, cor", "Raking às margens do Censo 2022 (18 anos ou mais): área × sexo, área × faixa etária, área × escolaridade e cor; ver scripts/02_pesos.R"
 )
 
-tipo_coluna <- function(x) {
+classificar_tipo_coluna <- function(x) {
   if (is.factor(x)) "categórica" else if (is.numeric(x)) "numérica" else "texto"
 }
+# o que o NA quer dizer nas colunas em que ele tem uma origem conhecida
 significado_na <- c(
   freq4 = "Não sabe responder",
   voto2t_3 = "Não sabe ou não quis responder",
@@ -85,9 +87,9 @@ dicionario <- tibble(variavel = colunas) %>%
     rotulo = unname(ROTULOS_VARIAVEIS[variavel]),
     enunciado_questionario = coalesce(unname(enunciados[variavel]),
                                       c(cod_setor = "CÓDIGO SETOR (codebook; não perguntado)")[variavel]),
-    tipo = purrr::map_chr(variavel, \(v) tipo_coluna(banco[[v]])),
-    n_validos = purrr::map_int(variavel, \(v) sum(!is.na(banco[[v]]))),
-    n_na = purrr::map_int(variavel, \(v) sum(is.na(banco[[v]]))),
+    tipo = unname(sapply(banco[colunas], classificar_tipo_coluna)),
+    n_validos = as.integer(colSums(!is.na(banco[colunas]))),
+    n_na = as.integer(colSums(is.na(banco[colunas]))),
     significado_na = unname(significado_na[variavel])
   ) %>%
   left_join(derivadas, by = "variavel") %>%
@@ -102,10 +104,11 @@ dicionario <- tibble(variavel = colunas) %>%
   select(variavel, rotulo, origem, variavel_origem, regra, enunciado_questionario, tipo, n_validos, n_na, significado_na)
 readr::write_csv(dicionario, file.path(dir_analise, "dicionario_variaveis.csv"), na = "")
 
-# dicionário de categorias ---------
-categorias <- purrr::map_dfr(colunas, function(v) {
+### ----- dicionário de categorias -----
+# uma linha por categoria das variáveis categóricas, com n e % ponderado
+colunas_categoricas <- colunas[sapply(banco[colunas], is.factor)]
+categorias <- purrr::map_dfr(colunas_categoricas, function(v) {
   x <- banco[[v]]
-  if (!is.factor(x)) return(NULL)
   n <- table(x)
   pct <- tapply(banco$peso, x, sum)
   mapa <- ROTULOS_CATEGORIAS[[v]]

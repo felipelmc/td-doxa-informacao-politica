@@ -1,4 +1,4 @@
-# 02 — Pesos amostrais: calibração por raking às margens do Censo 2022.
+# 02: pesos amostrais, calibrados por raking às margens do Censo 2022.
 #
 # Margens: área × sexo, área × faixa etária, área × escolaridade e cor ou raça (4 categorias).
 # Área: capital, RM exceto capital (LC estadual 184/2018) e demais municípios.
@@ -18,20 +18,22 @@ source(here::here("R/desenho.R"))
 df <- readRDS(here::here("data/processed/survey_limpo.rds"))
 censo <- ler_censo()
 
-desenho <- desenho_calibrado(df, censo)
+### ----- calibração -----
+desenho <- montar_desenho_calibrado(df, censo)
 df$peso <- unname(weights(desenho))
 saveRDS(df, here::here("data/processed/survey_ponderado.rds"))
 
-# diagnósticos ---------
+### ----- diagnósticos -----
 dir_diag <- here::here("output/diagnosticos")
 dir.create(dir_diag, showWarnings = FALSE, recursive = TRUE)
 
+# distribuição de uma margem na amostra sem peso, na amostra ponderada e no Censo
 comparar_margem <- function(vars) {
   amostra <- df %>%
     mutate(across(all_of(vars), as.character)) %>%
     group_by(across(all_of(vars))) %>%
     summarise(n = n(), peso = sum(peso), .groups = "drop")
-  pop <- margem_censo(censo, vars)
+  pop <- calcular_margem_censo(censo, vars)
   full_join(amostra, pop, by = vars) %>%
     mutate(margem = paste(vars, collapse = " × "),
            pct_amostra = 100 * n / sum(n, na.rm = TRUE),
@@ -47,9 +49,11 @@ readr::write_csv(margens, here::here(dir_diag, "pesos_margens_calibracao.csv"))
 desvio_max <- max(abs(margens$peso - margens$populacao))
 stopifnot(!anyNA(margens$n), desvio_max < 1)  # totais calibrados coincidem com o Censo (tolerância: 1 pessoa)
 
+# margens simples, inclusive as que só entram cruzadas com a área
 marginais <- purrr::map_dfr(c("sexo", "idadef", "esc_faixa", "area3", "cor"), comparar_margem)
 readr::write_csv(marginais, here::here(dir_diag, "pesos_marginais.csv"))
 
+# resumo dos pesos e efeito de desenho de Kish
 w <- df$peso
 resumo <- tibble(
   metodo = "raking: área×sexo, área×idade, área×escolaridade, cor",
@@ -61,7 +65,7 @@ resumo <- tibble(
 )
 readr::write_csv(resumo, here::here(dir_diag, "pesos_resumo.csv"))
 
-# erros-padrão sob diferentes especificações do desenho (para documentação) ---------
+### ----- erros-padrão sob diferentes especificações do desenho (para documentação) -----
 indicadores <- df %>%
   transmute(
     diario = as.numeric(freq_inf_pol == "TODOS OS DIAS"),
@@ -69,13 +73,14 @@ indicadores <- df %>%
     tv = as.numeric(inf1 == "NOTICIÁRIO DA TV"),
     redes = as.numeric(inf1 == "REDES SOCIAIS COMO FACEBOOK, INSTAGRAM OU TWITTER")
   )
+df_indicadores <- bind_cols(df, indicadores)
 especificacoes <- list(
-  "sem conglomerado, pesos calibrados" = svydesign(ids = ~1, weights = ~peso, data = bind_cols(df, indicadores)),
-  "setor como conglomerado, pesos calibrados" = svydesign(ids = ~cod_setor, weights = ~peso, data = bind_cols(df, indicadores)),
-  "setor como conglomerado + calibração (usado no TD)" = desenho_calibrado(bind_cols(df, indicadores), censo)
+  "sem conglomerado, pesos calibrados" = svydesign(ids = ~1, weights = ~peso, data = df_indicadores),
+  "setor como conglomerado, pesos calibrados" = svydesign(ids = ~cod_setor, weights = ~peso, data = df_indicadores),
+  "setor como conglomerado + calibração (usado no TD)" = montar_desenho_calibrado(df_indicadores, censo)
 )
-erros <- purrr::imap_dfr(especificacoes, function(d, nome) {
-  est <- svymean(~diario + nunca + tv + redes, d)
+erros <- purrr::imap_dfr(especificacoes, function(desenho_especificacao, nome) {
+  est <- svymean(~diario + nunca + tv + redes, desenho_especificacao)
   tibble(especificacao = nome, indicador = names(coef(est)),
          estimativa_pct = 100 * unname(coef(est)), erro_padrao_pp = 100 * unname(SE(est)))
 })

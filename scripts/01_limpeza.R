@@ -1,4 +1,4 @@
-# 01 — Limpeza do banco bruto do survey DOXA/Quaest (RJ, jul. 2023).
+# 01: limpeza do banco bruto do survey DOXA/Quaest (RJ, jul. 2023).
 #
 # Entrada: data/raw/quaest_rj_2023_td.rds (colunas do survey usadas no TD; ver data/raw/README.md)
 # Saída:   data/processed/survey_limpo.rds
@@ -13,7 +13,7 @@ source(here::here("R/censo.R"))
 bruto <- readRDS(here::here("data/raw/quaest_rj_2023_td.rds"))
 attr(bruto, "variable.labels") <- NULL  # enunciados ficam no codebook e nos dicionários (scripts/03_banco_analise.R)
 
-# seleção de colunas ---------
+### ----- seleção de colunas -----
 df <- bruto %>%
   select(
     mun, cod_setor, zona, cod_ibge,
@@ -27,19 +27,20 @@ df <- bruto %>%
 
 n_bruto <- nrow(df)
 
-# recodificação de escolaridade ---------
+### ----- recodificação de escolaridade -----
 df <- df %>%
   mutate(esc_faixa = recodificar_escolaridade(esc))
 
-# remove respondentes com menos de 18 anos e sem informação de cor ---------
+### ----- remove respondentes com menos de 18 anos e sem informação de cor -----
 n_menores <- sum(df$idadef == "16 - 17 ANOS")
 df <- df %>% filter(idadef != "16 - 17 ANOS")
-n_sem_cor <- sum(df$cor %in% c("NÃO SABE RESPONDER (NÃO LER)", "NÃO QUIS RESPONDER (NÃO LER)"))
+sem_cor <- c("NÃO SABE RESPONDER (NÃO LER)", "NÃO QUIS RESPONDER (NÃO LER)")
+n_sem_cor <- sum(df$cor %in% sem_cor)
 df <- df %>%
-  filter(!cor %in% c("NÃO SABE RESPONDER (NÃO LER)", "NÃO QUIS RESPONDER (NÃO LER)")) %>%
+  filter(!cor %in% sem_cor) %>%
   droplevels()
 
-# cor em quatro categorias e área (capital / RM / demais) ---------
+### ----- cor em quatro categorias e área (capital / RM / demais) -----
 df <- df %>%
   mutate(
     cor = recodificar_cor(cor),
@@ -49,6 +50,7 @@ df <- df %>%
 
 stopifnot(!anyNA(df$esc_faixa), !anyNA(df$cor), !anyNA(df$area3))
 
+### ----- gravação -----
 saveRDS(marcar_utf8(df), here::here("data/processed/survey_limpo.rds"))
 
 dir.create(here::here("output/diagnosticos"), showWarnings = FALSE, recursive = TRUE)

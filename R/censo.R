@@ -1,12 +1,12 @@
-# Funções para ler e harmonizar o extrato do Censo 2022 (SIDRA, tabela 10061) com as categorias do survey.
+# Funções para ler o extrato do Censo 2022 (SIDRA, tabela 10061) e harmonizá-lo com as categorias do survey.
 
 # Códigos IBGE dos municípios da Região Metropolitana (Lei Complementar estadual nº 184/2018, 22 municípios).
 ler_rm <- function() {
-  rm <- readr::read_csv(here::here("data/external/rm_rj.csv"), col_types = readr::cols(.default = "c"))
-  rm$cod_ibge[rm$rm == "1"]
+  rm_rj <- readr::read_csv(here::here("data/external/rm_rj.csv"), col_types = readr::cols(.default = "c"))
+  rm_rj$cod_ibge[rm_rj$rm == "1"]
 }
 
-# Classifica municípios nas três áreas usadas no TD.
+# Classifica os municípios nas três áreas usadas no TD.
 classificar_area <- function(cod_ibge, municipios_rm) {
   cod_ibge <- as.character(cod_ibge)
   dplyr::case_when(
@@ -20,7 +20,7 @@ classificar_area <- function(cod_ibge, municipios_rm) {
 ler_censo <- function() {
   municipios_rm <- ler_rm()
   readr::read_csv(here::here("data/external/censo2022_t10061_rj_municipios.csv.gz"),
-                  col_types = readr::cols(.default = "c")) |>
+                  col_types = readr::cols(.default = "c")) %>%
     dplyr::transmute(
       cod_ibge,
       area3 = classificar_area(cod_ibge, municipios_rm),
@@ -44,11 +44,11 @@ ler_censo <- function() {
     )
 }
 
-# Contagens populacionais por combinação das variáveis indicadas (formato exigido por survey::rake/postStratify).
-margem_censo <- function(censo, vars) {
+# População em cada combinação das variáveis indicadas, no formato que survey::rake() pede (coluna Freq).
+calcular_margem_censo <- function(censo, vars) {
   stopifnot(!anyNA(censo[vars]))
-  censo |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(vars))) |>
-    dplyr::summarise(Freq = sum(valor), .groups = "drop") |>
+  censo %>%
+    dplyr::group_by(dplyr::across(dplyr::all_of(vars))) %>%
+    dplyr::summarise(Freq = sum(valor), .groups = "drop") %>%
     as.data.frame()
 }

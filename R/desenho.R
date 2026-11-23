@@ -1,37 +1,38 @@
 # Desenho amostral e calibração dos pesos.
 #
-# A amostra da Quaest foi coletada por cotas em setores censitários. Os pesos são calibrados por raking
-# às distribuições do Censo 2022 (população de 18 anos ou mais do RJ), com margens cruzadas por área:
+# A Quaest coletou a amostra por cotas em setores censitários. Os pesos são calibrados por raking às
+# distribuições do Censo 2022 (população de 18 anos ou mais do RJ), com margens cruzadas por área:
 # área × sexo, área × faixa etária, área × escolaridade e cor ou raça (4 categorias).
-# O desenho usa o setor censitário como unidade primária de amostragem (conglomerado).
+# O setor censitário é a unidade primária de amostragem (conglomerado).
 
 formulas_calibracao <- list(~area3 + sexo, ~area3 + idadef, ~area3 + esc_faixa, ~cor)
 
-margens_calibracao <- function(censo) {
+# Margens do Censo na mesma ordem de formulas_calibracao.
+montar_margens_calibracao <- function(censo) {
   list(
-    margem_censo(censo, c("area3", "sexo")),
-    margem_censo(censo, c("area3", "idadef")),
-    margem_censo(censo, c("area3", "esc_faixa")),
-    margem_censo(censo, "cor")
+    calcular_margem_censo(censo, c("area3", "sexo")),
+    calcular_margem_censo(censo, c("area3", "idadef")),
+    calcular_margem_censo(censo, c("area3", "esc_faixa")),
+    calcular_margem_censo(censo, "cor")
   )
 }
 
-# Desenho calibrado: conglomerado por setor censitário e raking às margens do Censo.
-# Os erros-padrão calculados a partir deste objeto levam em conta a conglomeração e a calibração.
-desenho_calibrado <- function(dados, censo = ler_censo()) {
+# Desenho com conglomerado por setor censitário e raking às margens do Censo.
+# Os erros-padrão calculados com ele levam em conta a conglomeração e a calibração.
+montar_desenho_calibrado <- function(dados, censo = ler_censo()) {
   dados <- as.data.frame(dados)
-  inicial <- survey::svydesign(ids = ~cod_setor, weights = rep(1, nrow(dados)), data = dados)
+  desenho_inicial <- survey::svydesign(ids = ~cod_setor, weights = rep(1, nrow(dados)), data = dados)
   withCallingHandlers(
-    survey::rake(inicial, formulas_calibracao, margens_calibracao(censo),
+    survey::rake(desenho_inicial, formulas_calibracao, montar_margens_calibracao(censo),
                  control = list(maxit = 500, epsilon = 1e-6)),
     warning = function(w) stop("Raking não convergiu: ", conditionMessage(w))
   )
 }
 
-# Desenho usado nas análises do TD. Recalibra a partir do banco (rápido) e confere que os pesos
-# coincidem com a coluna `peso` salva pelo pipeline.
-desenho_td <- function(dados) {
-  d <- desenho_calibrado(dados)
-  if (!is.null(dados$peso)) stopifnot(isTRUE(all.equal(unname(weights(d)), dados$peso, tolerance = 1e-8)))
-  d
+# Desenho usado nas análises do TD. Recalibra a partir do banco de análise e confere que os pesos
+# coincidem com a coluna `peso` gravada em scripts/02_pesos.R.
+montar_desenho_td <- function(dados) {
+  desenho <- montar_desenho_calibrado(dados)
+  stopifnot(isTRUE(all.equal(unname(weights(desenho)), dados$peso, tolerance = 1e-8)))
+  desenho
 }

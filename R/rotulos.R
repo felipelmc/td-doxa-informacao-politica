@@ -2,7 +2,7 @@
 #
 # Para cada variável, os NOMES do vetor são os valores gravados no banco e os VALORES são os rótulos usados
 # no texto, nas tabelas e nos gráficos. A ordem dos elementos define a ordem de exibição e os níveis dos
-# fatores das variáveis derivadas. Usado por R/recodificacoes.R, scripts/03_banco_analise.R e R/graficos.R.
+# fatores das variáveis derivadas. Usado por R/recodificacoes.R e pelos scripts 03 a 05.
 
 identidade <- function(...) {
   x <- c(...)

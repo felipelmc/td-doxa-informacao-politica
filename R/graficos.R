@@ -1,8 +1,8 @@
-# Gráficos do TD (padrão dos Textos para Discussão do DOXA)
+# Gráficos do TD, no padrão dos Textos para Discussão do DOXA.
 #
 # As funções abaixo recebem tabelas já estimadas (output/estimativas/proporcoes.rds) e só desenham.
-# O título fica fora da imagem (legenda do Quarto: "Gráfico N — título"); a nota de fonte fica dentro,
-# para que cada figura exportada seja autossuficiente. Paletas seguras para daltonismo, uma por dimensão.
+# O título fica fora da imagem, na legenda do Quarto. A nota de fonte fica dentro, para que cada figura
+# exportada se leia sozinha. As paletas são seguras para daltonismo, uma por dimensão.
 
 FONTE_GRAFICOS <- "Arial"
 LARGURA_FIGURA <- 6.3  # polegadas: largura útil da página A4 com margens de 3 cm e 2 cm
@@ -72,11 +72,13 @@ pct_eixo <- function(limite = NULL, folga = 0.04) {
 
 rotulo_pct <- function(x) ifelse(x < 0.5, "<1%", paste0(formatC(x, format = "f", digits = 0), "%"))
 
-rotulo_n <- function(rotulo, n) paste0(rotulo, " (n = ", formatC(n, big.mark = ".", decimal.mark = ",", format = "d"), ")")
+# Rótulo do grupo com o número de entrevistas. Requer R/formatar.R.
+rotulo_n <- function(rotulo, n) paste0(rotulo, " (n = ", fmt_int(n), ")")
 
 # Barras horizontais com IC para a distribuição de uma variável na população.
-# `tabela`: linhas de proporcoes() com colunas categoria, pct, ic_inf, ic_sup; `cor`: vetor de cores por linha.
-grafico_barras <- function(tabela, rotulos, cores, limite = NULL, legenda = NULL, nota = nota_fonte()) {
+# `tabela`: linhas de calcular_proporcoes(), com pct, ic_inf e ic_sup; `rotulos` e `cores`: um valor por linha.
+# `legenda` (opcional): cores com nome, na ordem em que aparecem na legenda.
+plotar_barras <- function(tabela, rotulos, cores, limite = NULL, legenda = NULL, nota = nota_fonte()) {
   tabela <- tabela %>%
     dplyr::mutate(rotulo = factor(rotulos, levels = rev(unique(rotulos))), cor = cores, texto = rotulo_pct(pct))
   g <- ggplot2::ggplot(tabela, ggplot2::aes(x = pct, y = rotulo)) +
@@ -96,9 +98,9 @@ grafico_barras <- function(tabela, rotulos, cores, limite = NULL, legenda = NULL
 }
 
 # Barras 100% empilhadas: uma barra por grupo, segmentos na ordem de `niveis`.
-# `tabela`: linhas de proporcoes() com colunas painel, grupo_rotulo, categoria, pct e instavel.
-# Segmentos abaixo de `minimo_rotulo` ou com estimativa instável ficam sem rótulo.
-grafico_empilhado <- function(tabela, niveis, cores, nota = nota_fonte(), minimo_rotulo = 5) {
+# `tabela`: linhas de calcular_proporcoes(), com as colunas painel, grupo_rotulo, categoria, pct e instavel.
+# Segmentos abaixo de `minimo_rotulo` (em %) ou com estimativa instável ficam sem rótulo.
+plotar_empilhado <- function(tabela, niveis, cores, nota = nota_fonte(), minimo_rotulo = 5) {
   tabela <- tabela %>%
     dplyr::mutate(categoria = factor(categoria, levels = niveis),
                   texto = ifelse(pct >= minimo_rotulo & !instavel, paste0(formatC(pct, format = "f", digits = 0), "%"), ""),

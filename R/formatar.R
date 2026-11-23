@@ -8,11 +8,11 @@ fmt_int <- function(x) formatC(x, format = "d", big.mark = ".", decimal.mark = "
 fmt_pct <- function(x, digitos = 0) paste0(fmt_num(x, digitos), "%")
 
 # Linha única da tabela de proporções (output/estimativas/proporcoes.rds).
-buscar_prop <- function(tab, variavel, categoria, por = NA, grupo = NA, recorte = "total") {
-  sel <- tab$variavel == variavel & tab$categoria == categoria & tab$recorte == recorte &
-    (if (is.na(por)) is.na(tab$por) else tab$por %in% por) &
-    (if (is.na(grupo)) is.na(tab$grupo) else tab$grupo %in% grupo)
-  linha <- tab[sel, ]
+extrair_proporcao <- function(prop, variavel, categoria, por = NA, grupo = NA, recorte = "total") {
+  selecionada <- prop$variavel == variavel & prop$categoria == categoria & prop$recorte == recorte &
+    (if (is.na(por)) is.na(prop$por) else prop$por %in% por) &
+    (if (is.na(grupo)) is.na(prop$grupo) else prop$grupo %in% grupo)
+  linha <- prop[selecionada, ]
   if (nrow(linha) != 1) stop("Estimativa não encontrada ou ambígua: ", paste(variavel, categoria, por, grupo, recorte))
   linha
 }

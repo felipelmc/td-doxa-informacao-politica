@@ -1,4 +1,4 @@
-# 04 — Estimativas do TD: proporções, diferenças e tabelas.
+# 04: estimativas do TD (proporções, diferenças e tabelas).
 #
 # Todas as estimativas usam o desenho calibrado (setor censitário como conglomerado + raking às margens do
 # Censo 2022; ver R/desenho.R), com IC de 95% em escala logit.
@@ -28,22 +28,26 @@ silenciar <- function(expr) {
 banco <- readRDS(here::here("data/analysis/td_informacao.rds"))
 censo <- ler_censo()
 
-preparar <- function(design) {
-  update(design, usa_rede_politica = factor(case_when(
-    redes_rec %in% "Não sabe ou não respondeu" ~ NA_character_,
-    redes_rec %in% c("Não usa redes sociais", "Não é rede social (Google, sites ou TV)") ~ "Não",
-    !is.na(redes_rec) ~ "Sim"
-  ), levels = c("Sim", "Não")))
-}
-d <- preparar(desenho_td(banco))
+### ----- desenho e recortes -----
+desenho <- montar_desenho_td(banco)
 
+# cita alguma rede social que usa para se informar sobre política (tabela 2)
+desenho <- update(desenho, usa_rede_politica = factor(case_when(
+  redes_rec %in% "Não sabe ou não respondeu" ~ NA_character_,
+  redes_rec %in% c("Não usa redes sociais", "Não é rede social (Google, sites ou TV)") ~ "Não",
+  !is.na(redes_rec) ~ "Sim"
+), levels = c("Sim", "Não")))
+
+# recorte sem quem nunca se informa sobre política. A mesma restrição, como expressão, entra nas diferenças
+# (o texto dela é gravado na coluna `dominio` de diferencas.csv)
 freq_informa <- c("Todo dia", "Toda semana", "Mensal ou raramente")
+dominio_sem_nunca <- quote(freq4 %in% c("Todo dia", "Toda semana", "Mensal ou raramente"))
 recortes <- list(
-  total = d,
-  sem_nunca = subset(d, freq4 %in% freq_informa)
+  total = desenho,
+  sem_nunca = subset(desenho, freq4 %in% freq_informa)
 )
 
-# 1. Proporções ------------------------------------------------------------------------------------
+### ----- proporções -----
 vars_perfil <- c("sexo", "idadef", "esc_faixa", "cor", "renda_grp", "area3", "freq4", "redes_grp",
                  "usa_rede_politica", "ideologia_grp", "part_pref_grp", "voto2t_3")
 especificacoes <- bind_rows(
@@ -69,80 +73,85 @@ especificacoes <- bind_rows(
   tibble(recorte = "total", por = "freq4", variavel = c("aval_lula3", "aval_gov3", "ideologia_grp", "part_pref_grp", "voto2t_3"))
 )
 
-calcular_proporcoes <- function(desenhos, specs) {
-  pmap_dfr(specs, function(recorte, por, variavel) {
-    silenciar(proporcoes(desenhos[[recorte]], variavel, if (is.na(por)) NULL else por)) %>%
-      mutate(recorte = recorte, .before = 1)
-  })
-}
-prop <- calcular_proporcoes(recortes, especificacoes)
+# uma chamada de calcular_proporcoes() por linha de `especificacoes`
+prop <- pmap_dfr(especificacoes, function(recorte, por, variavel) {
+  silenciar(calcular_proporcoes(recortes[[recorte]], variavel, if (is.na(por)) NULL else por)) %>%
+    mutate(recorte = recorte, .before = 1)
+})
 
-# 2. Diferenças (IC 95% e p-valor) ----------------------------------------------------------------
+### ----- diferenças (IC 95% e p-valor) -----
 # Não aparecem no texto: documentam as comparações feitas nele e indicam quando uma diferença fica dentro da
 # margem de erro (ic_exclui_zero = FALSE).
-dg <- function(id, descricao, ...) silenciar(diferenca_grupos(d, ...)) %>% mutate(id = id, descricao = descricao, .before = 1)
-dc <- function(id, descricao, ...) silenciar(diferenca_categorias(d, ...)) %>% mutate(id = id, descricao = descricao, .before = 1)
+# cada comparação leva um id e uma descrição legível
+comparar_grupos <- function(id, descricao, ...) {
+  silenciar(calcular_diferenca_grupos(desenho, ...)) %>% mutate(id = id, descricao = descricao, .before = 1)
+}
+comparar_categorias <- function(id, descricao, ...) {
+  silenciar(calcular_diferenca_categorias(desenho, ...)) %>% mutate(id = id, descricao = descricao, .before = 1)
+}
+
+# categorias que se repetem nas comparações
 redes <- "Redes sociais e mensageiros"
 sites <- "Sites, portais e busca"
-ns <- "Não sabe ou não respondeu"
-bnv <- "Branco, nulo ou não votou"
-nv <- "Não foi votar"
+nao_sabe <- "Não sabe ou não respondeu"
+branco_nulo <- "Branco, nulo ou não votou"
+nao_votou <- "Não foi votar"
 baixa <- c("Mensal ou raramente", "Nunca")
 capital <- "RIO CAPITAL"
-rm <- "RM (EXCETO CAPITAL)"
+regiao_metro <- "RM (EXCETO CAPITAL)"
 demais <- "DEMAIS MUNICÍPIOS"
-ob <- "Ótimo ou bom"
+otimo_bom <- "Ótimo ou bom"
 
 dif <- bind_rows(
   # frequência, fontes e regiões
-  dc("diario_menos_rara_nunca", "Informa-se todo dia − raramente ou nunca (população)", "freq_inf_pol", "TODOS OS DIAS", c("RARAMENTE", "NUNCA")),
-  dg("nunca_rm_capital", "Nunca se informa: RM − capital", "freq4", "Nunca", "area3", rm, capital),
-  dg("nunca_demais_capital", "Nunca se informa: demais municípios − capital", "freq4", "Nunca", "area3", demais, capital),
-  dg("diario_capital_rm", "Informa-se todo dia: capital − RM", "freq4", "Todo dia", "area3", capital, rm),
-  dg("diario_capital_demais", "Informa-se todo dia: capital − demais municípios", "freq4", "Todo dia", "area3", capital, demais),
-  dg("tv_capital_resto", "TV como fonte: capital − RM e demais municípios", "fonte5", "TV", "area3", capital, c(rm, demais)),
+  comparar_categorias("diario_menos_rara_nunca", "Informa-se todo dia − raramente ou nunca (população)", "freq_inf_pol", "TODOS OS DIAS", c("RARAMENTE", "NUNCA")),
+  comparar_grupos("nunca_rm_capital", "Nunca se informa: RM − capital", "freq4", "Nunca", "area3", regiao_metro, capital),
+  comparar_grupos("nunca_demais_capital", "Nunca se informa: demais municípios − capital", "freq4", "Nunca", "area3", demais, capital),
+  comparar_grupos("diario_capital_rm", "Informa-se todo dia: capital − RM", "freq4", "Todo dia", "area3", capital, regiao_metro),
+  comparar_grupos("diario_capital_demais", "Informa-se todo dia: capital − demais municípios", "freq4", "Todo dia", "area3", capital, demais),
+  comparar_grupos("tv_capital_resto", "TV como fonte: capital − RM e demais municípios", "fonte5", "TV", "area3", capital, c(regiao_metro, demais)),
   # públicos da TV e da internet
-  dc("tv_menos_internet", "TV − internet como fonte principal (população)", "fonte4", "TV", "Internet"),
-  dc("tv_menos_internet_sem_nunca", "TV − internet como fonte principal, entre quem se informa ao menos raramente",
-     "fonte4", "TV", "Internet", dominio = quote(freq4 %in% c("Todo dia", "Toda semana", "Mensal ou raramente"))),
-  dg("internet_jovens_idosos", "Internet como fonte: 18 a 24 anos − 60 anos ou mais", "fonte4", "Internet", "idadef", "18 - 24 ANOS", "60 ANOS OU MAIS"),
-  dg("tv_idosos_jovens", "TV como fonte: 60 anos ou mais − 18 a 24 anos", "fonte4", "TV", "idadef", "60 ANOS OU MAIS", "18 - 24 ANOS"),
-  dg("internet_superior_sem_instrucao", "Internet como fonte: superior completo − sem instrução/fundamental incompleto",
-     "fonte4", "Internet", "esc_faixa", "Superior completo", "Sem instrução e fundamental incompleto"),
+  comparar_categorias("tv_menos_internet", "TV − internet como fonte principal (população)", "fonte4", "TV", "Internet"),
+  comparar_categorias("tv_menos_internet_sem_nunca", "TV − internet como fonte principal, entre quem se informa ao menos raramente",
+                      "fonte4", "TV", "Internet", dominio = dominio_sem_nunca),
+  comparar_grupos("internet_jovens_idosos", "Internet como fonte: 18 a 24 anos − 60 anos ou mais", "fonte4", "Internet", "idadef", "18 - 24 ANOS", "60 ANOS OU MAIS"),
+  comparar_grupos("tv_idosos_jovens", "TV como fonte: 60 anos ou mais − 18 a 24 anos", "fonte4", "TV", "idadef", "60 ANOS OU MAIS", "18 - 24 ANOS"),
+  comparar_grupos("internet_superior_sem_instrucao", "Internet como fonte: superior completo − sem instrução/fundamental incompleto",
+                  "fonte4", "Internet", "esc_faixa", "Superior completo", "Sem instrução e fundamental incompleto"),
   # preferências eleitorais
-  dg("diario_lula_naovotou", "Informa-se todo dia: Lula − não foi votar", "freq4", "Todo dia", "voto2t_4", "Lula", nv),
-  dg("diario_bolsonaro_naovotou", "Informa-se todo dia: Bolsonaro − não foi votar", "freq4", "Todo dia", "voto2t_4", "Bolsonaro", nv),
-  dg("diario_lula_bolsonaro", "Informa-se todo dia: Lula − Bolsonaro", "freq4", "Todo dia", "voto2t_4", "Lula", "Bolsonaro"),
-  dg("baixa_naovotou_lula", "Mensal, raramente ou nunca: não foi votar − Lula", "freq4", baixa, "voto2t_4", nv, "Lula"),
-  dg("baixa_naovotou_bolsonaro", "Mensal, raramente ou nunca: não foi votar − Bolsonaro", "freq4", baixa, "voto2t_4", nv, "Bolsonaro"),
-  dg("tv_lula_bolsonaro", "TV como fonte: Lula − Bolsonaro", "fonte5", "TV", "voto2t_4", "Lula", "Bolsonaro"),
-  dg("redes_bolsonaro_lula", "Redes e mensageiros como fonte: Bolsonaro − Lula", "fonte5", redes, "voto2t_4", "Bolsonaro", "Lula"),
-  dg("nunca_castro_freixo", "Nunca se informa: Castro − Freixo", "freq4", "Nunca", "gov_2", "Castro", "Freixo"),
-  dg("sites_freixo_castro", "Sites, portais e busca como fonte: Freixo − Castro", "fonte5", sites, "gov_2", "Freixo", "Castro"),
+  comparar_grupos("diario_lula_naovotou", "Informa-se todo dia: Lula − não foi votar", "freq4", "Todo dia", "voto2t_4", "Lula", nao_votou),
+  comparar_grupos("diario_bolsonaro_naovotou", "Informa-se todo dia: Bolsonaro − não foi votar", "freq4", "Todo dia", "voto2t_4", "Bolsonaro", nao_votou),
+  comparar_grupos("diario_lula_bolsonaro", "Informa-se todo dia: Lula − Bolsonaro", "freq4", "Todo dia", "voto2t_4", "Lula", "Bolsonaro"),
+  comparar_grupos("baixa_naovotou_lula", "Mensal, raramente ou nunca: não foi votar − Lula", "freq4", baixa, "voto2t_4", nao_votou, "Lula"),
+  comparar_grupos("baixa_naovotou_bolsonaro", "Mensal, raramente ou nunca: não foi votar − Bolsonaro", "freq4", baixa, "voto2t_4", nao_votou, "Bolsonaro"),
+  comparar_grupos("tv_lula_bolsonaro", "TV como fonte: Lula − Bolsonaro", "fonte5", "TV", "voto2t_4", "Lula", "Bolsonaro"),
+  comparar_grupos("redes_bolsonaro_lula", "Redes e mensageiros como fonte: Bolsonaro − Lula", "fonte5", redes, "voto2t_4", "Bolsonaro", "Lula"),
+  comparar_grupos("nunca_castro_freixo", "Nunca se informa: Castro − Freixo", "freq4", "Nunca", "gov_2", "Castro", "Freixo"),
+  comparar_grupos("sites_freixo_castro", "Sites, portais e busca como fonte: Freixo − Castro", "fonte5", sites, "gov_2", "Freixo", "Castro"),
   # avaliação de governo
-  dc("lula_ob_diario_nunca", "Avalia Lula como ótimo ou bom: todo dia − nunca", "freq4", "Todo dia", "Nunca", dominio = quote(aval_lula3 %in% "Ótimo ou bom")),
-  dg("diario_ob_regular_lula", "Informa-se todo dia: avalia Lula ótimo/bom − regular", "freq4", "Todo dia", "aval_lula3", ob, "Regular"),
-  dg("baixa_regular_ob_lula", "Mensal, raramente ou nunca: avalia Lula regular − ótimo/bom", "freq4", baixa, "aval_lula3", "Regular", ob),
-  dc("castro_ob_nunca_diario", "Avalia Castro como ótimo ou bom: nunca − todo dia", "freq4", "Nunca", "Todo dia", dominio = quote(aval_gov3 %in% "Ótimo ou bom")),
-  dc("castro_ob_nunca_mensal", "Avalia Castro como ótimo ou bom: nunca − mensal ou raramente", "freq4", "Nunca", "Mensal ou raramente", dominio = quote(aval_gov3 %in% "Ótimo ou bom")),
-  dg("lula_ob_tv_redes", "Avalia Lula como ótimo ou bom: TV − redes e mensageiros", "aval_lula3", ob, "fonte5", "TV", redes),
-  dg("lula_rp_redes_tv", "Avalia Lula como ruim ou péssimo: redes e mensageiros − TV", "aval_lula3", "Ruim ou péssimo", "fonte5", redes, "TV"),
-  dg("lula_ob_tv_redes_eleitores_lula", "Avalia Lula como ótimo ou bom: TV − redes e mensageiros (eleitores de Lula)", "aval_lula3", ob, "fonte5", "TV", redes, dominio = quote(voto2t_4 %in% "Lula")),
-  dg("lula_ob_tv_redes_eleitores_bolsonaro", "Avalia Lula como ótimo ou bom: TV − redes e mensageiros (eleitores de Bolsonaro)", "aval_lula3", ob, "fonte5", "TV", redes, dominio = quote(voto2t_4 %in% "Bolsonaro")),
+  comparar_categorias("lula_ob_diario_nunca", "Avalia Lula como ótimo ou bom: todo dia − nunca", "freq4", "Todo dia", "Nunca", dominio = quote(aval_lula3 %in% "Ótimo ou bom")),
+  comparar_grupos("diario_ob_regular_lula", "Informa-se todo dia: avalia Lula ótimo/bom − regular", "freq4", "Todo dia", "aval_lula3", otimo_bom, "Regular"),
+  comparar_grupos("baixa_regular_ob_lula", "Mensal, raramente ou nunca: avalia Lula regular − ótimo/bom", "freq4", baixa, "aval_lula3", "Regular", otimo_bom),
+  comparar_categorias("castro_ob_nunca_diario", "Avalia Castro como ótimo ou bom: nunca − todo dia", "freq4", "Nunca", "Todo dia", dominio = quote(aval_gov3 %in% "Ótimo ou bom")),
+  comparar_categorias("castro_ob_nunca_mensal", "Avalia Castro como ótimo ou bom: nunca − mensal ou raramente", "freq4", "Nunca", "Mensal ou raramente", dominio = quote(aval_gov3 %in% "Ótimo ou bom")),
+  comparar_grupos("lula_ob_tv_redes", "Avalia Lula como ótimo ou bom: TV − redes e mensageiros", "aval_lula3", otimo_bom, "fonte5", "TV", redes),
+  comparar_grupos("lula_rp_redes_tv", "Avalia Lula como ruim ou péssimo: redes e mensageiros − TV", "aval_lula3", "Ruim ou péssimo", "fonte5", redes, "TV"),
+  comparar_grupos("lula_ob_tv_redes_eleitores_lula", "Avalia Lula como ótimo ou bom: TV − redes e mensageiros (eleitores de Lula)", "aval_lula3", otimo_bom, "fonte5", "TV", redes, dominio = quote(voto2t_4 %in% "Lula")),
+  comparar_grupos("lula_ob_tv_redes_eleitores_bolsonaro", "Avalia Lula como ótimo ou bom: TV − redes e mensageiros (eleitores de Bolsonaro)", "aval_lula3", otimo_bom, "fonte5", "TV", redes, dominio = quote(voto2t_4 %in% "Bolsonaro")),
   # informação e formação de opinião (tabela 3)
-  dg("opiniao_ns_castro", "Não sabe avaliar o governo Castro: nunca se informa − todo dia", "aval_gov3", ns, "freq4", "Nunca", "Todo dia"),
-  dg("opiniao_ns_castro_mensal", "Não sabe avaliar o governo Castro: nunca se informa − mensal ou raramente", "aval_gov3", ns, "freq4", "Nunca", "Mensal ou raramente"),
-  dg("opiniao_ns_lula", "Não sabe avaliar o governo Lula: nunca se informa − todo dia", "aval_lula3", ns, "freq4", "Nunca", "Todo dia"),
-  dg("opiniao_sem_ideologia", "Sem ideologia ou não sabe: nunca se informa − todo dia", "ideologia_grp", c("Nenhuma", ns), "freq4", "Nunca", "Todo dia"),
-  dg("opiniao_sem_partido", "Sem partido preferido ou não sabe: nunca se informa − todo dia", "part_pref_grp", c("Nenhum", ns), "freq4", "Nunca", "Todo dia"),
-  dg("opiniao_bnv", "Branco, nulo ou não votou no 2º turno: nunca se informa − todo dia", "voto2t_3", bnv, "freq4", "Nunca", "Todo dia"),
+  comparar_grupos("opiniao_ns_castro", "Não sabe avaliar o governo Castro: nunca se informa − todo dia", "aval_gov3", nao_sabe, "freq4", "Nunca", "Todo dia"),
+  comparar_grupos("opiniao_ns_castro_mensal", "Não sabe avaliar o governo Castro: nunca se informa − mensal ou raramente", "aval_gov3", nao_sabe, "freq4", "Nunca", "Mensal ou raramente"),
+  comparar_grupos("opiniao_ns_lula", "Não sabe avaliar o governo Lula: nunca se informa − todo dia", "aval_lula3", nao_sabe, "freq4", "Nunca", "Todo dia"),
+  comparar_grupos("opiniao_sem_ideologia", "Sem ideologia ou não sabe: nunca se informa − todo dia", "ideologia_grp", c("Nenhuma", nao_sabe), "freq4", "Nunca", "Todo dia"),
+  comparar_grupos("opiniao_sem_partido", "Sem partido preferido ou não sabe: nunca se informa − todo dia", "part_pref_grp", c("Nenhum", nao_sabe), "freq4", "Nunca", "Todo dia"),
+  comparar_grupos("opiniao_bnv", "Branco, nulo ou não votou no 2º turno: nunca se informa − todo dia", "voto2t_3", branco_nulo, "freq4", "Nunca", "Todo dia"),
   # avaliação de governo por região
-  dg("lula_ob_capital_rm", "Avalia Lula como ótimo ou bom: capital − RM", "aval_lula3", ob, "area3", capital, rm),
-  dg("lula_ob_demais_rm", "Avalia Lula como ótimo ou bom: demais municípios − RM", "aval_lula3", ob, "area3", demais, rm),
-  dg("lula_ob_capital_demais", "Avalia Lula como ótimo ou bom: capital − demais municípios", "aval_lula3", ob, "area3", capital, demais),
-  dg("castro_ob_rm_capital", "Avalia Castro como ótimo ou bom: RM − capital", "aval_gov3", ob, "area3", rm, capital),
-  dg("castro_ob_demais_capital", "Avalia Castro como ótimo ou bom: demais municípios − capital", "aval_gov3", ob, "area3", demais, capital),
-  dg("castro_ob_rm_demais", "Avalia Castro como ótimo ou bom: RM − demais municípios", "aval_gov3", ob, "area3", rm, demais)
+  comparar_grupos("lula_ob_capital_rm", "Avalia Lula como ótimo ou bom: capital − RM", "aval_lula3", otimo_bom, "area3", capital, regiao_metro),
+  comparar_grupos("lula_ob_demais_rm", "Avalia Lula como ótimo ou bom: demais municípios − RM", "aval_lula3", otimo_bom, "area3", demais, regiao_metro),
+  comparar_grupos("lula_ob_capital_demais", "Avalia Lula como ótimo ou bom: capital − demais municípios", "aval_lula3", otimo_bom, "area3", capital, demais),
+  comparar_grupos("castro_ob_rm_capital", "Avalia Castro como ótimo ou bom: RM − capital", "aval_gov3", otimo_bom, "area3", regiao_metro, capital),
+  comparar_grupos("castro_ob_demais_capital", "Avalia Castro como ótimo ou bom: demais municípios − capital", "aval_gov3", otimo_bom, "area3", demais, capital),
+  comparar_grupos("castro_ob_rm_demais", "Avalia Castro como ótimo ou bom: RM − demais municípios", "aval_gov3", otimo_bom, "area3", regiao_metro, demais)
 )
 
 # perfil TV × internet (tabela 2): diferença internet − TV em cada categoria
@@ -150,21 +159,21 @@ perfil_linhas <- prop %>%
   filter(recorte == "total", por == "fonte4", variavel %in% vars_perfil, grupo %in% c("TV", "Internet")) %>%
   distinct(variavel, categoria)
 dif_perfil <- pmap_dfr(perfil_linhas, function(variavel, categoria) {
-  dg(paste("perfil", variavel, categoria, sep = "|"), paste("Perfil (internet − TV):", variavel, "=", categoria),
-     variavel, categoria, "fonte4", "Internet", "TV")
+  comparar_grupos(paste("perfil", variavel, categoria, sep = "|"), paste("Perfil (internet − TV):", variavel, "=", categoria),
+                  variavel, categoria, "fonte4", "Internet", "TV")
 })
 dif_sem_nunca <- bind_rows(
-  dg("perfil_sem_nunca|idadef|60 ANOS OU MAIS", "Perfil (internet − TV), sem quem nunca se informa: 60 anos ou mais",
-     "idadef", "60 ANOS OU MAIS", "fonte4", "Internet", "TV", dominio = quote(freq4 %in% c("Todo dia", "Toda semana", "Mensal ou raramente"))),
-  dg("perfil_sem_nunca|esc_faixa|Superior completo", "Perfil (internet − TV), sem quem nunca se informa: superior completo",
-     "esc_faixa", "Superior completo", "fonte4", "Internet", "TV", dominio = quote(freq4 %in% c("Todo dia", "Toda semana", "Mensal ou raramente"))),
-  dg("perfil_sem_nunca|voto2t_3|Bolsonaro", "Perfil (internet − TV), sem quem nunca se informa: voto declarado em Bolsonaro",
-     "voto2t_3", "Bolsonaro", "fonte4", "Internet", "TV", dominio = quote(freq4 %in% c("Todo dia", "Toda semana", "Mensal ou raramente")))
+  comparar_grupos("perfil_sem_nunca|idadef|60 ANOS OU MAIS", "Perfil (internet − TV), sem quem nunca se informa: 60 anos ou mais",
+                  "idadef", "60 ANOS OU MAIS", "fonte4", "Internet", "TV", dominio = dominio_sem_nunca),
+  comparar_grupos("perfil_sem_nunca|esc_faixa|Superior completo", "Perfil (internet − TV), sem quem nunca se informa: superior completo",
+                  "esc_faixa", "Superior completo", "fonte4", "Internet", "TV", dominio = dominio_sem_nunca),
+  comparar_grupos("perfil_sem_nunca|voto2t_3|Bolsonaro", "Perfil (internet − TV), sem quem nunca se informa: voto declarado em Bolsonaro",
+                  "voto2t_3", "Bolsonaro", "fonte4", "Internet", "TV", dominio = dominio_sem_nunca)
 )
 dif <- bind_rows(dif, dif_perfil, dif_sem_nunca) %>%
   mutate(ic_exclui_zero = ic_inf > 0 | ic_sup < 0)
 
-# 3. Tabelas do corpo do texto ---------------------------------------------------------------------
+### ----- tabelas do corpo do texto -----
 # Tabela 1: perfil da amostra sem peso, Censo 2022 e ponderada
 tabela1 <- map_dfr(c("sexo", "idadef", "esc_faixa", "cor", "area3", "renda_grp"), function(v) {
   amostra <- banco %>%
@@ -194,6 +203,7 @@ tabela2 <- prop %>%
   left_join(prop %>% filter(recorte == "total", is.na(por), variavel %in% vars_perfil) %>% select(variavel, categoria, pct_total = pct),
             by = c("variavel", "categoria")) %>%
   mutate(rotulo_variavel = unname(ROTULOS_VARIAVEIS[variavel]),
+         # usa_rede_politica não está em R/rotulos.R: o rótulo é a própria categoria (Sim ou Não)
          rotulo = map2_chr(categoria, variavel, \(k, v) if (v == "usa_rede_politica") k else as.character(rotular(k, v))),
          ordem_variavel = match(variavel, vars_perfil),
          ordem = map2_int(categoria, variavel, \(k, v) {
@@ -202,58 +212,57 @@ tabela2 <- prop %>%
   arrange(ordem_variavel, ordem)
 
 # Tabela 3: falta de opinião política por frequência com que se informa
-indicadores_opiniao <- tribble(
-  ~indicador, ~variavel, ~categorias,
-  "Não sabe avaliar o governo Cláudio Castro", "aval_gov3", list(ns),
-  "Não sabe avaliar o governo Lula", "aval_lula3", list(ns),
-  "Não se identifica com nenhuma ideologia ou não sabe", "ideologia_grp", list(c("Nenhuma", ns)),
-  "Não tem partido preferido ou não sabe", "part_pref_grp", list(c("Nenhum", ns)),
-  "Votou branco, nulo ou não foi votar no 2º turno de 2022", "voto2t_3", list(bnv)
-)
-tabela3 <- pmap_dfr(indicadores_opiniao, function(indicador, variavel, categorias) {
-  categorias <- unlist(categorias)
+# % das `categorias` de `var` em cada grupo de frequência. Somas de categorias têm variação relativa menor,
+# então o alerta de instabilidade vale só para indicadores de uma categoria.
+somar_por_frequencia <- function(indicador, var, categorias) {
   prop %>%
-    filter(recorte == "total", por == "freq4", variavel == !!variavel, categoria %in% categorias) %>%
+    filter(recorte == "total", por == "freq4", variavel == var, categoria %in% categorias) %>%
     group_by(grupo) %>%
-    # somas de categorias têm variação relativa menor; o alerta vale para indicadores de uma só categoria
     summarise(pct = sum(pct), instavel = length(categorias) == 1 & any(instavel), n_grupo = first(n_grupo),
               .groups = "drop") %>%
     mutate(indicador = indicador)
-}) %>%
-  mutate(indicador = factor(indicador, levels = indicadores_opiniao$indicador),
+}
+tabela3 <- bind_rows(
+  somar_por_frequencia("Não sabe avaliar o governo Cláudio Castro", "aval_gov3", nao_sabe),
+  somar_por_frequencia("Não sabe avaliar o governo Lula", "aval_lula3", nao_sabe),
+  somar_por_frequencia("Não se identifica com nenhuma ideologia ou não sabe", "ideologia_grp", c("Nenhuma", nao_sabe)),
+  somar_por_frequencia("Não tem partido preferido ou não sabe", "part_pref_grp", c("Nenhum", nao_sabe)),
+  somar_por_frequencia("Votou branco, nulo ou não foi votar no 2º turno de 2022", "voto2t_3", branco_nulo)
+) %>%
+  mutate(indicador = factor(indicador, levels = unique(indicador)),
          grupo = factor(grupo, levels = names(ROTULOS_CATEGORIAS$freq4))) %>%
   arrange(indicador, grupo) %>%
   select(indicador, grupo, pct, instavel) %>%
   pivot_wider(names_from = grupo, values_from = c(pct, instavel)) %>%
   mutate(indicador = as.character(indicador))
 
-# 4. Voto declarado e resultado oficial (TSE) ---------------------------------------------------------
+### ----- voto declarado e resultado oficial (TSE) -----
 tse <- readr::read_csv(here::here("data/external/tse_rj_candidatos.csv"), show_col_types = FALSE)
-pct_tse <- function(pleito_, turno_, cargo_, candidato_) {
-  tse$pct_validos[tse$pleito == pleito_ & tse$turno == turno_ & tse$cargo == cargo_ & tse$candidato == candidato_]
+pct_tse <- function(pleito, turno, cargo, candidato) {
+  tse$pct_validos[tse$pleito == pleito & tse$turno == turno & tse$cargo == cargo & tse$candidato == candidato]
 }
-validos_gov <- c("CLÁUDIO CASTRO", "MARCELO FREIXO", "RODRIGO NEVES", "PAULO GANIME", "CYRO GARCIA",
+candidatos_gov_validos <- c("CLÁUDIO CASTRO", "MARCELO FREIXO", "RODRIGO NEVES", "PAULO GANIME", "CYRO GARCIA",
                  "EDUARDO SERRA", "JULIETE PANTOJA")  # Witzel e Luiz Eugênio tiveram votos anulados
 nao_validos_1t <- c("VOTOU BRANCO/NULO", "NÃO QUIS RESPONDER (NÃO LER)")
 
-# percentual ponderado dos votos válidos declarados
-prop_ponderada <- function(x, dominio) 100 * sum(banco$peso[dominio & x]) / sum(banco$peso[dominio])
-lb <- banco$voto2t_4 %in% c("Lula", "Bolsonaro")
-t1 <- !is.na(banco$cen2_votou_1t) & !banco$cen2_votou_1t %in% nao_validos_1t
-gov <- banco$cen2_votou_1t_govrj %in% validos_gov
-t18 <- banco$cen_t2_18 %in% c("JAIR BOLSONARO", "FERNANDO HADDAD")
+# percentual ponderado de `x` entre os votos válidos declarados (`validos`)
+calcular_pct_ponderado <- function(x, validos) 100 * sum(banco$peso[validos & x]) / sum(banco$peso[validos])
+validos_2t <- banco$voto2t_4 %in% c("Lula", "Bolsonaro")
+validos_1t <- !is.na(banco$cen2_votou_1t) & !banco$cen2_votou_1t %in% nao_validos_1t
+validos_gov <- banco$cen2_votou_1t_govrj %in% candidatos_gov_validos
+validos_2t_2018 <- banco$cen_t2_18 %in% c("JAIR BOLSONARO", "FERNANDO HADDAD")
 voto_declarado_tse <- tribble(
   ~resultado, ~tse, ~survey,
-  "Presidente, 2º turno de 2022: Lula", pct_tse(2022, 2, "Presidente", "LULA"), prop_ponderada(banco$voto2t_4 %in% "Lula", lb),
-  "Presidente, 2º turno de 2022: Bolsonaro", pct_tse(2022, 2, "Presidente", "JAIR BOLSONARO"), prop_ponderada(banco$voto2t_4 %in% "Bolsonaro", lb),
-  "Presidente, 1º turno de 2022: Lula", pct_tse(2022, 1, "Presidente", "LULA"), prop_ponderada(banco$cen2_votou_1t %in% "LULA", t1),
-  "Presidente, 1º turno de 2022: Bolsonaro", pct_tse(2022, 1, "Presidente", "JAIR BOLSONARO"), prop_ponderada(banco$cen2_votou_1t %in% "JAIR BOLSONARO", t1),
-  "Governador, 1º turno de 2022: Cláudio Castro", pct_tse(2022, 1, "Governador", "CLÁUDIO CASTRO"), prop_ponderada(banco$cen2_votou_1t_govrj %in% "CLÁUDIO CASTRO", gov),
-  "Governador, 1º turno de 2022: Marcelo Freixo", pct_tse(2022, 1, "Governador", "MARCELO FREIXO"), prop_ponderada(banco$cen2_votou_1t_govrj %in% "MARCELO FREIXO", gov),
-  "Presidente, 2º turno de 2018: Bolsonaro", pct_tse(2018, 2, "Presidente", "JAIR BOLSONARO"), prop_ponderada(banco$cen_t2_18 %in% "JAIR BOLSONARO", t18)
+  "Presidente, 2º turno de 2022: Lula", pct_tse(2022, 2, "Presidente", "LULA"), calcular_pct_ponderado(banco$voto2t_4 %in% "Lula", validos_2t),
+  "Presidente, 2º turno de 2022: Bolsonaro", pct_tse(2022, 2, "Presidente", "JAIR BOLSONARO"), calcular_pct_ponderado(banco$voto2t_4 %in% "Bolsonaro", validos_2t),
+  "Presidente, 1º turno de 2022: Lula", pct_tse(2022, 1, "Presidente", "LULA"), calcular_pct_ponderado(banco$cen2_votou_1t %in% "LULA", validos_1t),
+  "Presidente, 1º turno de 2022: Bolsonaro", pct_tse(2022, 1, "Presidente", "JAIR BOLSONARO"), calcular_pct_ponderado(banco$cen2_votou_1t %in% "JAIR BOLSONARO", validos_1t),
+  "Governador, 1º turno de 2022: Cláudio Castro", pct_tse(2022, 1, "Governador", "CLÁUDIO CASTRO"), calcular_pct_ponderado(banco$cen2_votou_1t_govrj %in% "CLÁUDIO CASTRO", validos_gov),
+  "Governador, 1º turno de 2022: Marcelo Freixo", pct_tse(2022, 1, "Governador", "MARCELO FREIXO"), calcular_pct_ponderado(banco$cen2_votou_1t_govrj %in% "MARCELO FREIXO", validos_gov),
+  "Presidente, 2º turno de 2018: Bolsonaro", pct_tse(2018, 2, "Presidente", "JAIR BOLSONARO"), calcular_pct_ponderado(banco$cen_t2_18 %in% "JAIR BOLSONARO", validos_2t_2018)
 )
 
-# 5. Gravação ----------------------------------------------------------------------------------------
+### ----- gravação -----
 dir_est <- here::here("output/estimativas")
 dir.create(dir_est, showWarnings = FALSE, recursive = TRUE)
 saidas <- list(

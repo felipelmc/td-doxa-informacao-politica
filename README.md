@@ -34,8 +34,9 @@ renv::restore()
 Rscript run_all.R
 ```
 
-O `run_all.R` confere os insumos externos (SHA-256), executa as etapas 01 a 05 em processos separados, renderiza o TD e
-grava `output/sessionInfo.txt`. Para baixar de novo os dados do Censo, da Região Metropolitana e do TSE, rode
+O `run_all.R` confere os insumos externos (SHA-256), apaga `output/estimativas/` e `output/figuras/`, executa as
+etapas 01 a 05 em processos separados, renderiza o TD e grava `output/sessionInfo.txt`. Cada etapa também pode ser
+rodada sozinha (`Rscript scripts/04_estimativas.R`, por exemplo), desde que as anteriores já tenham gravado suas saídas. Para baixar de novo os dados do Censo, da Região Metropolitana e do TSE, rode
 `Rscript scripts/00_atualizar_insumos.R` (requer internet). O banco bruto traz apenas as colunas do _survey_ usadas no
 TD; o banco completo da Quaest não é distribuído.
 

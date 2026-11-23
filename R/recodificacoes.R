@@ -37,8 +37,8 @@ recodificar_cor <- function(cor) {
   )
 }
 
-# Marca como UTF-8 os textos e níveis de fator de um data frame. Evita erros de codificação em pacotes
-# que exigem a marcação explícita, independentemente do locale da máquina.
+# Marca como UTF-8 os textos e os níveis de fator de um data frame. Alguns pacotes exigem a marcação explícita
+# e dão erro de codificação sem ela, a depender do locale da máquina.
 marcar_utf8 <- function(dados) {
   utf8_fator <- function(x) {
     levels(x) <- enc2utf8(levels(x))
@@ -66,9 +66,9 @@ derivar_variaveis_analise <- function(df) {
       x %in% ns_nr ~ "Não sabe ou não respondeu"
     )
   }
-  aberta <- stringr::str_to_lower(stringr::str_trim(as.character(df$redes_pol_out)))
+  resposta_aberta <- stringr::str_to_lower(stringr::str_trim(as.character(df$redes_pol_out)))
 
-  out <- df %>%
+  df <- df %>%
     dplyr::mutate(
       freq4 = fator(dplyr::case_when(
         freq_inf_pol == "TODOS OS DIAS" ~ "Todo dia",
@@ -99,10 +99,10 @@ derivar_variaveis_analise <- function(df) {
         redes_pol == "TWITTER" ~ "Twitter (X)",
         redes_pol == "TIKTOK" ~ "TikTok ou Kwai",
         redes_pol %in% ns_nr ~ "Não sabe ou não respondeu",
-        redes_pol == "OUTRA. QUAL? ABERTA" & stringr::str_detect(aberta, "^nenhu|^nao usa") ~ "Não usa redes sociais",
-        redes_pol == "OUTRA. QUAL? ABERTA" & stringr::str_detect(aberta, "telegr") ~ "WhatsApp ou Telegram",
-        redes_pol == "OUTRA. QUAL? ABERTA" & stringr::str_detect(aberta, "kwai|kuai|ckai") ~ "TikTok ou Kwai",
-        redes_pol == "OUTRA. QUAL? ABERTA" & stringr::str_detect(aberta, "google|site|sitrs|globo|^tv$|canal tv") ~
+        redes_pol == "OUTRA. QUAL? ABERTA" & stringr::str_detect(resposta_aberta, "^nenhu|^nao usa") ~ "Não usa redes sociais",
+        redes_pol == "OUTRA. QUAL? ABERTA" & stringr::str_detect(resposta_aberta, "telegr") ~ "WhatsApp ou Telegram",
+        redes_pol == "OUTRA. QUAL? ABERTA" & stringr::str_detect(resposta_aberta, "kwai|kuai|ckai") ~ "TikTok ou Kwai",
+        redes_pol == "OUTRA. QUAL? ABERTA" & stringr::str_detect(resposta_aberta, "google|site|sitrs|globo|^tv$|canal tv") ~
           "Não é rede social (Google, sites ou TV)",
         redes_pol == "OUTRA. QUAL? ABERTA" ~ "Outra rede"
       ), "redes_rec"),
@@ -162,19 +162,19 @@ derivar_variaveis_analise <- function(df) {
 
   # nenhuma categoria de origem pode ficar sem classificação
   stopifnot(
-    identical(is.na(out$fonte4), is.na(out$inf1)),
-    identical(is.na(out$fonte5), is.na(out$inf1)),
-    identical(is.na(out$redes_rec), is.na(out$redes_pol)),
-    identical(is.na(out$redes_grp), is.na(out$redes_pol)),
-    identical(is.na(out$esc2), is.na(out$esc_faixa)),
-    identical(is.na(out$voto2t_4), is.na(out$voto2t_3)),
-    identical(is.na(out$aval_lula3), is.na(out$adpi1_lula)),
-    identical(is.na(out$aval_gov3), is.na(out$adpi1_gov)),
-    identical(is.na(out$renda_grp), is.na(out$rendaf)),
-    identical(is.na(out$ideologia_grp), is.na(out$ideologia)),
-    identical(is.na(out$part_pref_grp), is.na(out$part_pref)),
-    all(is.na(out$freq4) == (is.na(out$freq_inf_pol) | out$freq_inf_pol == "NÃO SABE RESPONDER (NÃO LER)")),
-    !anyNA(out$gov_cat)
+    identical(is.na(df$fonte4), is.na(df$inf1)),
+    identical(is.na(df$fonte5), is.na(df$inf1)),
+    identical(is.na(df$redes_rec), is.na(df$redes_pol)),
+    identical(is.na(df$redes_grp), is.na(df$redes_pol)),
+    identical(is.na(df$esc2), is.na(df$esc_faixa)),
+    identical(is.na(df$voto2t_4), is.na(df$voto2t_3)),
+    identical(is.na(df$aval_lula3), is.na(df$adpi1_lula)),
+    identical(is.na(df$aval_gov3), is.na(df$adpi1_gov)),
+    identical(is.na(df$renda_grp), is.na(df$rendaf)),
+    identical(is.na(df$ideologia_grp), is.na(df$ideologia)),
+    identical(is.na(df$part_pref_grp), is.na(df$part_pref)),
+    all(is.na(df$freq4) == (is.na(df$freq_inf_pol) | df$freq_inf_pol == "NÃO SABE RESPONDER (NÃO LER)")),
+    !anyNA(df$gov_cat)
   )
-  out
+  df
 }
