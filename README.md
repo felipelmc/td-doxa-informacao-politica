@@ -4,6 +4,8 @@ Pacote de replicação do Texto para Discussão do DOXA (Laboratório de Estudos
 Opinião Pública do IESP-UERJ) sobre acesso à informação política no estado do Rio de Janeiro, com dados do _survey_
 DOXA/Quaest de julho de 2023.
 
+O TD está registrado no Zenodo com o DOI [10.5281/zenodo.24485143](https://doi.org/10.5281/zenodo.24485143).
+
 ## Estrutura
 
 | Pasta | Conteúdo |

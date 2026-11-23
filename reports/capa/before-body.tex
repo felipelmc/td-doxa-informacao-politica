@@ -15,7 +15,7 @@
 \null
 \clearpage
 
-% folha de rosto: título à esquerda; autor, afiliação, e-mail e ORCID à direita
+% folha de rosto: título à esquerda; autor, afiliação, e-mail, ORCID e DOI à direita
 \pagenumbering{arabic}
 \begin{flushleft}
 \textbf{$title$}$if(subtitle)$\\
@@ -27,7 +27,8 @@ $for(authors)$
 $it.name.literal$\\[0.3em]
 \setstretch{1.15}
 $afiliacao$ E-mail: \href{mailto:$it.email$}{$it.email$}\\
-\url{https://orcid.org/$it.orcid$}
+\url{https://orcid.org/$it.orcid$}$if(doi)$\\[0.6em]
+DOI: \href{https://doi.org/$doi$}{$doi$}$endif$
 \end{flushright}
 $endfor$
 \vspace{1.5em}
