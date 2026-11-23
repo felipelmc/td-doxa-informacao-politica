@@ -6,6 +6,26 @@ DOXA/Quaest de julho de 2023.
 
 O TD está registrado no Zenodo com o DOI [10.5281/zenodo.24485143](https://doi.org/10.5281/zenodo.24485143).
 
+## Como citar
+
+LAMARCA, Felipe. **Como a população do estado do Rio de Janeiro se informa sobre política?** Uma análise de _survey_.
+Rio de Janeiro: DOXA, IESP-UERJ, 2026. (Textos para Discussão, 3). DOI: 10.5281/zenodo.24485143.
+
+```bibtex
+@techreport{lamarca2026informacao,
+  author      = {Lamarca, Felipe},
+  title       = {Como a população do estado do {Rio de Janeiro} se informa sobre política? {U}ma análise de \textit{survey}},
+  institution = {DOXA, Instituto de Estudos Sociais e Políticos, Universidade do Estado do Rio de Janeiro},
+  type        = {Texto para Discussão},
+  number      = {3},
+  address     = {Rio de Janeiro},
+  year        = {2026},
+  month       = nov,
+  doi         = {10.5281/zenodo.24485143},
+  url         = {https://doi.org/10.5281/zenodo.24485143}
+}
+```
+
 ## Estrutura
 
 | Pasta | Conteúdo |
