@@ -1,9 +1,12 @@
 ---
 title: "Como a população do estado do Rio de Janeiro se informa sobre política?"
-subtitle: "Uma análise de survey"
+subtitle: "Uma análise de _survey_"
 author:
   - name: Felipe Lamarca
     email: felipelamarca@iesp.uerj.br
+    orcid: 0000-0003-0002-3627
+afiliacao: "Mestrando em Ciência Política no Instituto de Estudos Sociais e Políticos (IESP), Universidade do Estado do Rio de Janeiro (UERJ)."
+numero-td: 3
 date: 2026-09-14
 date-format: "D [de] MMMM [de] YYYY"
 lang: pt-BR
@@ -23,6 +26,8 @@ format:
     fig-pos: "htbp"
     fig-cap-location: top
     tbl-cap-location: top
+    template-partials:
+      - capa/before-body.tex
     geometry:
       - top=30mm
       - bottom=20mm
@@ -30,6 +35,10 @@ format:
       - right=20mm
     include-in-header:
       text: |
+        % capa (reports/capa/before-body.tex): fundo em página inteira e fonte Calibri, como nos TDs do DOXA.
+        % Sem a Calibri, usa a Carlito, que tem as mesmas métricas e licença livre (tlmgr install carlito).
+        \usepackage{eso-pic}
+        \IfFontExistsTF{Calibri}{\newfontfamily\fontecapa{Calibri}}{\newfontfamily\fontecapa{Carlito}[Extension=.ttf, UprightFont=*-Regular, BoldFont=*-Bold]}
         \usepackage{titlesec}
         \titleformat{\section}{\normalfont\bfseries}{\thesection.}{0.5em}{}
         \titleformat{\subsection}{\normalfont\bfseries}{\thesubsection.}{0.5em}{}

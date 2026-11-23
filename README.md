@@ -14,7 +14,7 @@ DOXA/Quaest de julho de 2023.
 | `data/analysis/` | Banco de análise do TD (`td_informacao.csv` e `.rds`) e dicionários de variáveis e de categorias |
 | `R/` | Funções: Censo, recodificações, rótulos, desenho amostral, estimação, gráficos e formatação |
 | `scripts/` | Etapas do pipeline, de `01_limpeza.R` a `05_figuras.R`, e `00_atualizar_insumos.R`, que baixa os insumos externos |
-| `reports/` | Texto do TD (`report1-informacao.qmd`) e o PDF renderizado |
+| `reports/` | Texto do TD (`report1-informacao.qmd`), capa no padrão dos TDs do DOXA (`capa/`) e o PDF renderizado |
 | `output/` | Estimativas e tabelas (`estimativas/`), figuras em PDF e PNG (`figuras/`), diagnósticos dos pesos (`diagnosticos/`) e `sessionInfo.txt` |
 | `tests/` | Checagem dos insumos externos |
 
@@ -22,7 +22,8 @@ DOXA/Quaest de julho de 2023.
 
 Requisitos: R 4.5.2, [Quarto](https://quarto.org) 1.9 ou superior com TinyTeX (`quarto install tinytex`) e a fonte Arial
 instalada no sistema. Sem a Arial, troque `mainfont` e `sansfont` no cabeçalho do TD e `FONTE_GRAFICOS` em
-`R/graficos.R` (por exemplo, por TeX Gyre Heros).
+`R/graficos.R` (por exemplo, por TeX Gyre Heros). A capa usa a Calibri, como os demais TDs do DOXA. Sem ela, usa a
+Carlito, que tem as mesmas métricas (`tlmgr install carlito`).
 
 ```r
 # no R, na raiz do projeto: instala as versões de pacotes registradas em renv.lock

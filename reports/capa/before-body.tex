@@ -1,0 +1,33 @@
+% Capa e folha de rosto no padrão dos Textos para Discussão do DOXA. Substitui o \maketitle do Quarto.
+% O título, o autor, o e-mail, o ORCID, o número do TD (numero-td) e a afiliação (afiliacao) vêm do cabeçalho
+% do .qmd. As posições e os tamanhos da capa, em pontos, são os do TD 1 do DOXA.
+
+% capa: fundo com o logo do DOXA e textos em branco, sem número de página
+\pagenumbering{Alph}
+\thispagestyle{empty}
+\AddToShipoutPictureBG*{\AtPageLowerLeft{\includegraphics[width=\paperwidth,height=\paperheight]{capa/fundo.jpg}}}
+\AddToShipoutPictureFG*{\AtPageUpperLeft{%
+  \color{white}\fontecapa\bfseries
+  \put(49.5,-62.7){\fontsize{24}{24}\selectfont TEXTOS PARA DISCUSSÃO $numero-td$}%
+  \put(97.7,-214.4){\parbox[t]{365pt}{\raggedright\fontsize{36}{36}\selectfont $title$}}%
+  \put(93.4,-454.7){\fontsize{18}{18}\selectfont $for(authors)$$it.name.literal$$sep$, $endfor$}%
+}}
+\null
+\clearpage
+
+% folha de rosto: título à esquerda; autor, afiliação, e-mail e ORCID à direita
+\pagenumbering{arabic}
+\begin{flushleft}
+\textbf{$title$}$if(subtitle)$\\
+$subtitle$$endif$
+\end{flushleft}
+\vspace{1em}
+$for(authors)$
+\begin{flushright}
+$it.name.literal$\\[0.3em]
+\setstretch{1.15}
+$afiliacao$ E-mail: \href{mailto:$it.email$}{$it.email$}\\
+\url{https://orcid.org/$it.orcid$}
+\end{flushright}
+$endfor$
+\vspace{1.5em}
